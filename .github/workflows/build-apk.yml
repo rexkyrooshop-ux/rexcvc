@@ -2,47 +2,28 @@ name: Build Rexcvc APK
 
 on:
   workflow_dispatch:
-
   push:
     branches:
       - main
 
-
 permissions:
   contents: write
 
-
 jobs:
-
   build:
-
     runs-on: ubuntu-latest
 
-
     steps:
-
-
-      # ==========================
-      # CHECKOUT
-      # ==========================
 
       - name: Checkout
         uses: actions/checkout@v4
 
-
-      # ==========================
-      # NODE
-      # ==========================
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "22"
 
-
-      # ==========================
-      # JAVA
-      # ==========================
 
       - name: Setup Java
         uses: actions/setup-java@v6
@@ -51,172 +32,103 @@ jobs:
           java-version: "21"
 
 
-      # ==========================
-      # FRONTEND
-      # ==========================
+      - name: Check project files
+        run: |
+          echo "=== FILES ==="
+          ls -la
+
+          echo "=== ICON ==="
+          ls -lh rexcvc-icon-final.png
+
+          echo "=== FRONTEND ==="
+          ls -lh index.html
+
+          echo "=== SERVER ==="
+          ls -lh server.js
+
 
       - name: Prepare frontend
         run: |
-
           rm -rf public
-
           mkdir -p public
 
           cp index.html public/index.html
 
-          cp config.js public/config.js
+          if [ -f config.js ]; then
+            cp config.js public/config.js
+          fi
 
-
-      # ==========================
-      # INSTALL DEPENDENCIES
-      # ==========================
 
       - name: Install dependencies
         run: |
-
           npm install --include=dev
 
 
-      # ==========================
-      # INSTALL CAPACITOR
-      # ==========================
-
       - name: Install Capacitor
         run: |
-
           npm install --no-save \
             @capacitor/cli@8 \
             @capacitor/core@8 \
             @capacitor/android@8 \
-            @capacitor/clipboard@8 \
-            typescript@5.9.2 \
-            esbuild
+            typescript@5.9.2
 
 
-      # ==========================
-      # CREATE CLIPBOARD BRIDGE
-      # ==========================
-
-      - name: Create Clipboard bridge
+      - name: Check Capacitor
         run: |
-
-          cat > clipboard-bridge.js <<'EOF'
-
-          import { Clipboard } from "@capacitor/clipboard";
-
-          window.RexcvcClipboard = Clipboard;
-
-          EOF
-
-
-          npx esbuild \
-            clipboard-bridge.js \
-            --bundle \
-            --format=iife \
-            --platform=browser \
-            --outfile=public/clipboard-bridge.js
-
-
-      # ==========================
-      # VERIFY CAPACITOR
-      # ==========================
-
-      - name: Verify Capacitor
-        run: |
-
           npx cap --version
-
           npx tsc --version
 
 
-      # ==========================
-      # ADD ANDROID
-      # ==========================
-
-      - name: Add Android platform
+      - name: Add Android
         run: |
+          npx cap add android
 
-          npx --no-install cap add android
 
-
-      # ==========================
-      # SYNC
-      # ==========================
-
-      - name: Sync Capacitor
+      - name: Sync Android
         run: |
+          npx cap sync android
 
-          npx --no-install cap sync android
-
-
-      # ==========================
-      # INSTALL IMAGEMAGICK
-      # ==========================
 
       - name: Install ImageMagick
         run: |
-
           sudo apt-get update
-
           sudo apt-get install -y imagemagick
 
 
-      # ==========================
-      # CHECK ICON
-      # ==========================
-
-      - name: Check REXCVC icon
+      - name: Generate Android icons
         run: |
 
-          test -f rexcvc-app-icon-1024.png
+          ICON="rexcvc-icon-final.png"
 
-
-      # ==========================
-      # GENERATE ICONS
-      # ==========================
-
-      - name: Generate Android app icons
-        run: |
+          echo "Using icon:"
+          ls -lh "$ICON"
 
           mkdir -p android/app/src/main/res/mipmap-mdpi
-
           mkdir -p android/app/src/main/res/mipmap-hdpi
-
           mkdir -p android/app/src/main/res/mipmap-xhdpi
-
           mkdir -p android/app/src/main/res/mipmap-xxhdpi
-
           mkdir -p android/app/src/main/res/mipmap-xxxhdpi
 
-
-          convert rexcvc-app-icon-1024.png \
+          magick "$ICON" \
             -resize 48x48 \
             android/app/src/main/res/mipmap-mdpi/ic_launcher.png
 
-
-          convert rexcvc-app-icon-1024.png \
+          magick "$ICON" \
             -resize 72x72 \
             android/app/src/main/res/mipmap-hdpi/ic_launcher.png
 
-
-          convert rexcvc-app-icon-1024.png \
+          magick "$ICON" \
             -resize 96x96 \
             android/app/src/main/res/mipmap-xhdpi/ic_launcher.png
 
-
-          convert rexcvc-app-icon-1024.png \
+          magick "$ICON" \
             -resize 144x144 \
             android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
 
-
-          convert rexcvc-app-icon-1024.png \
+          magick "$ICON" \
             -resize 192x192 \
             android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
 
-
-      # ==========================
-      # ROUND ICONS
-      # ==========================
 
       - name: Generate round icons
         run: |
@@ -225,58 +137,43 @@ jobs:
             android/app/src/main/res/mipmap-mdpi/ic_launcher.png \
             android/app/src/main/res/mipmap-mdpi/ic_launcher_round.png
 
-
           cp \
             android/app/src/main/res/mipmap-hdpi/ic_launcher.png \
             android/app/src/main/res/mipmap-hdpi/ic_launcher_round.png
-
 
           cp \
             android/app/src/main/res/mipmap-xhdpi/ic_launcher.png \
             android/app/src/main/res/mipmap-xhdpi/ic_launcher_round.png
 
-
           cp \
             android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png \
             android/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png
-
 
           cp \
             android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png \
             android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png
 
 
-      # ==========================
-      # REMOVE ADAPTIVE ICON
-      # ==========================
-
-      - name: Remove default adaptive icons
+      - name: Remove adaptive icons
         run: |
 
           rm -f \
             android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
 
-
           rm -f \
             android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
 
 
-      # ==========================
-      # VERIFY ICONS
-      # ==========================
-
-      - name: Verify generated icons
+      - name: Verify icons
         run: |
+
+          echo "=== GENERATED ICONS ==="
 
           find android/app/src/main/res \
             -name "ic_launcher*.png" \
             -type f \
             -print
 
-
-      # ==========================
-      # BUILD
-      # ==========================
 
       - name: Build APK
         working-directory: android
@@ -287,11 +184,7 @@ jobs:
           ./gradlew assembleDebug
 
 
-      # ==========================
-      # ARTIFACT
-      # ==========================
-
-      - name: Upload APK artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: Rexcvc-debug-apk
@@ -299,24 +192,13 @@ jobs:
           if-no-files-found: error
 
 
-      # ==========================
-      # RELEASE
-      # ==========================
-
       - name: Publish APK
         uses: softprops/action-gh-release@v3
-
         with:
-
           tag_name: latest
-
           name: Rexcvc APK
-
           files: |
             android/app/build/outputs/apk/debug/app-debug.apk
-
           prerelease: false
-
         env:
-
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
