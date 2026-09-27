@@ -28,11 +28,11 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: '22'
 
 
       # =========================
-      # JAVA 21
+      # JAVA
       # =========================
       - name: Setup Java
         uses: actions/setup-java@v6
@@ -47,33 +47,54 @@ jobs:
       - name: Prepare frontend
         run: |
           mkdir -p public
-
           cp index.html public/index.html
           cp config.js public/config.js
 
 
       # =========================
-      # INSTALL DEPENDENCIES
+      # INSTALL PROJECT DEPENDENCIES
       # =========================
       - name: Install dependencies
         run: |
           npm install --include=dev
-          npm install -g @capacitor/cli@8.5.2
 
 
       # =========================
-      # ADD ANDROID
+      # INSTALL CAPACITOR
+      # =========================
+      - name: Install Capacitor
+        run: |
+          npm install --no-save \
+            @capacitor/cli@8.5.2 \
+            @capacitor/core@8.5.2 \
+            @capacitor/android@8.5.2 \
+            typescript@5.9.2
+
+
+      # =========================
+      # CHECK CAPACITOR
+      # =========================
+      - name: Verify Capacitor
+        run: |
+          npx cap --version
+          npx tsc --version
+
+
+      # =========================
+      # ADD ANDROID PLATFORM
       # =========================
       - name: Add Android platform
         run: |
-          cap add android
+          npx --no-install cap add android
+
 
       # =========================
       # SYNC CAPACITOR
       # =========================
       - name: Sync Capacitor
         run: |
-          cap sync android
+          npx --no-install cap sync android
+
 
       # =========================
       # INSTALL IMAGEMAGICK
@@ -85,124 +106,108 @@ jobs:
 
 
       # =========================
-      # GENERATE APP ICON
+      # GENERATE ANDROID APP ICONS
       # =========================
       - name: Generate Android app icons
         run: |
-          ICON="rexcvc-app-icon-1024.png"
-
-          echo "Checking icon..."
-
-          if [ ! -f "$ICON" ]; then
-            echo "ERROR: $ICON tidak ditemukan di root repository."
-            exit 1
-          fi
-
-          echo "Icon ditemukan:"
-          file "$ICON"
-
           mkdir -p android/app/src/main/res/mipmap-mdpi
           mkdir -p android/app/src/main/res/mipmap-hdpi
           mkdir -p android/app/src/main/res/mipmap-xhdpi
           mkdir -p android/app/src/main/res/mipmap-xxhdpi
           mkdir -p android/app/src/main/res/mipmap-xxxhdpi
 
-          echo "Generating mdpi..."
-          magick "$ICON" -resize 48x48 \
+          convert rexcvc-app-icon-1024.png \
+            -resize 48x48 \
             android/app/src/main/res/mipmap-mdpi/ic_launcher.png
 
-          echo "Generating hdpi..."
-          magick "$ICON" -resize 72x72 \
+          convert rexcvc-app-icon-1024.png \
+            -resize 72x72 \
             android/app/src/main/res/mipmap-hdpi/ic_launcher.png
 
-          echo "Generating xhdpi..."
-          magick "$ICON" -resize 96x96 \
+          convert rexcvc-app-icon-1024.png \
+            -resize 96x96 \
             android/app/src/main/res/mipmap-xhdpi/ic_launcher.png
 
-          echo "Generating xxhdpi..."
-          magick "$ICON" -resize 144x144 \
+          convert rexcvc-app-icon-1024.png \
+            -resize 144x144 \
             android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
 
-          echo "Generating xxxhdpi..."
-          magick "$ICON" -resize 192x192 \
+          convert rexcvc-app-icon-1024.png \
+            -resize 192x192 \
             android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
 
 
       # =========================
-      # ROUND ICON
+      # GENERATE ROUND ICONS
       # =========================
       - name: Generate round icons
         run: |
           cp android/app/src/main/res/mipmap-mdpi/ic_launcher.png \
-            android/app/src/main/res/mipmap-mdpi/ic_launcher_round.png
+             android/app/src/main/res/mipmap-mdpi/ic_launcher_round.png
 
           cp android/app/src/main/res/mipmap-hdpi/ic_launcher.png \
-            android/app/src/main/res/mipmap-hdpi/ic_launcher_round.png
+             android/app/src/main/res/mipmap-hdpi/ic_launcher_round.png
 
           cp android/app/src/main/res/mipmap-xhdpi/ic_launcher.png \
-            android/app/src/main/res/mipmap-xhdpi/ic_launcher_round.png
+             android/app/src/main/res/mipmap-xhdpi/ic_launcher_round.png
 
           cp android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png \
-            android/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png
+             android/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png
 
           cp android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png \
-            android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png
+             android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png
 
 
       # =========================
-      # REMOVE ADAPTIVE ICON
+      # REMOVE DEFAULT ADAPTIVE ICONS
       # =========================
       - name: Remove default adaptive icons
         run: |
           rm -f android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
           rm -f android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
 
-          echo "Default adaptive icons removed."
-
 
       # =========================
-      # VERIFY ICON
+      # VERIFY ICONS
       # =========================
       - name: Verify generated icons
         run: |
-          echo "Checking generated icons..."
-
           find android/app/src/main/res \
             -name "ic_launcher*.png" \
             -type f \
             -print
-
-          echo "Checking adaptive icons..."
-
-          if [ -d android/app/src/main/res/mipmap-anydpi-v26 ]; then
-            find android/app/src/main/res/mipmap-anydpi-v26 \
-              -type f \
-              -print
-          fi
 
 
       # =========================
       # BUILD APK
       # =========================
       - name: Build APK
+        working-directory: android
         run: |
-          cd android
-
           chmod +x gradlew
-
           ./gradlew assembleDebug
 
 
       # =========================
-      # PUBLISH APK
+      # UPLOAD APK ARTIFACT
+      # =========================
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Rexcvc-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+
+
+      # =========================
+      # PUBLISH APK RELEASE
       # =========================
       - name: Publish APK
         uses: softprops/action-gh-release@v3
         with:
           tag_name: latest
           name: Rexcvc APK
-          body: |
-            Latest Rexcvc APK
-
-            Built automatically by GitHub Actions.
           files: android/app/build/outputs/apk/debug/app-debug.apk
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
