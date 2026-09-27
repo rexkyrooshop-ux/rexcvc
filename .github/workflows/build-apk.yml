@@ -57,7 +57,8 @@ jobs:
       # =========================
       - name: Install dependencies
         run: |
-          npm install
+          npm install --include=dev
+          npm install -g @capacitor/cli@8.5.2
 
 
       # =========================
@@ -65,16 +66,14 @@ jobs:
       # =========================
       - name: Add Android platform
         run: |
-          npx cap add android
-
+          cap add android
 
       # =========================
       # SYNC CAPACITOR
       # =========================
       - name: Sync Capacitor
         run: |
-          npx cap sync android
-
+          cap sync android
 
       # =========================
       # INSTALL IMAGEMAGICK
