@@ -2,22 +2,13 @@
   "name": "rexcvc",
   "version": "1.0.0",
   "private": true,
-  "description": "Rexcvc frontend + backend + Android Capacitor",
+  "description": "Rexcvc downloader",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "build:web": "node -e \"console.log('Rexcvc web build: static public/ directory')\"",
-    "cap:add:android": "npx cap add android",
-    "cap:sync": "npx cap sync android",
-    "android:debug": "cd android && ./gradlew assembleDebug"
+    "start": "node server.js"
   },
   "dependencies": {
+    "cors": "^2.8.5",
     "express": "^4.21.2"
-  },
-  "devDependencies": {
-    "@capacitor/android": "^8.5.2",
-    "@capacitor/cli": "^8.5.2",
-    "@capacitor/core": "^8.5.2",
-    "typescript": "^5.9.2"
   }
 }
