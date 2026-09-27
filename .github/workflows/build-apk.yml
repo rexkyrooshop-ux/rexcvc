@@ -14,48 +14,93 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
+      # =========================
+      # CHECKOUT
+      # =========================
       - name: Checkout
         uses: actions/checkout@v4
 
+
+      # =========================
+      # NODE.JS
+      # =========================
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
 
+
+      # =========================
+      # JAVA 21
+      # =========================
       - name: Setup Java
         uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '21'
 
+
+      # =========================
+      # PREPARE FRONTEND
+      # =========================
       - name: Prepare frontend
         run: |
           mkdir -p public
+
           cp index.html public/index.html
           cp config.js public/config.js
 
+
+      # =========================
+      # INSTALL DEPENDENCIES
+      # =========================
       - name: Install dependencies
-        run: npm install
+        run: |
+          npm install
 
+
+      # =========================
+      # ADD ANDROID
+      # =========================
       - name: Add Android platform
-        run: npx cap add android
+        run: |
+          npx cap add android
 
+
+      # =========================
+      # SYNC CAPACITOR
+      # =========================
       - name: Sync Capacitor
-        run: npx cap sync android
+        run: |
+          npx cap sync android
 
+
+      # =========================
+      # INSTALL IMAGEMAGICK
+      # =========================
       - name: Install ImageMagick
         run: |
           sudo apt-get update
           sudo apt-get install -y imagemagick
 
+
+      # =========================
+      # GENERATE APP ICON
+      # =========================
       - name: Generate Android app icons
         run: |
           ICON="rexcvc-app-icon-1024.png"
+
+          echo "Checking icon..."
 
           if [ ! -f "$ICON" ]; then
             echo "ERROR: $ICON tidak ditemukan di root repository."
             exit 1
           fi
+
+          echo "Icon ditemukan:"
+          file "$ICON"
 
           mkdir -p android/app/src/main/res/mipmap-mdpi
           mkdir -p android/app/src/main/res/mipmap-hdpi
@@ -63,21 +108,32 @@ jobs:
           mkdir -p android/app/src/main/res/mipmap-xxhdpi
           mkdir -p android/app/src/main/res/mipmap-xxxhdpi
 
+          echo "Generating mdpi..."
           magick "$ICON" -resize 48x48 \
             android/app/src/main/res/mipmap-mdpi/ic_launcher.png
 
+          echo "Generating hdpi..."
           magick "$ICON" -resize 72x72 \
             android/app/src/main/res/mipmap-hdpi/ic_launcher.png
 
+          echo "Generating xhdpi..."
           magick "$ICON" -resize 96x96 \
             android/app/src/main/res/mipmap-xhdpi/ic_launcher.png
 
+          echo "Generating xxhdpi..."
           magick "$ICON" -resize 144x144 \
             android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
 
+          echo "Generating xxxhdpi..."
           magick "$ICON" -resize 192x192 \
             android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
 
+
+      # =========================
+      # ROUND ICON
+      # =========================
+      - name: Generate round icons
+        run: |
           cp android/app/src/main/res/mipmap-mdpi/ic_launcher.png \
             android/app/src/main/res/mipmap-mdpi/ic_launcher_round.png
 
@@ -93,16 +149,61 @@ jobs:
           cp android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png \
             android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png
 
+
+      # =========================
+      # REMOVE ADAPTIVE ICON
+      # =========================
+      - name: Remove default adaptive icons
+        run: |
+          rm -f android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
+          rm -f android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
+
+          echo "Default adaptive icons removed."
+
+
+      # =========================
+      # VERIFY ICON
+      # =========================
+      - name: Verify generated icons
+        run: |
+          echo "Checking generated icons..."
+
+          find android/app/src/main/res \
+            -name "ic_launcher*.png" \
+            -type f \
+            -print
+
+          echo "Checking adaptive icons..."
+
+          if [ -d android/app/src/main/res/mipmap-anydpi-v26 ]; then
+            find android/app/src/main/res/mipmap-anydpi-v26 \
+              -type f \
+              -print
+          fi
+
+
+      # =========================
+      # BUILD APK
+      # =========================
       - name: Build APK
         run: |
           cd android
+
           chmod +x gradlew
+
           ./gradlew assembleDebug
 
+
+      # =========================
+      # PUBLISH APK
+      # =========================
       - name: Publish APK
         uses: softprops/action-gh-release@v3
         with:
           tag_name: latest
           name: Rexcvc APK
-          body: Latest Rexcvc APK
+          body: |
+            Latest Rexcvc APK
+
+            Built automatically by GitHub Actions.
           files: android/app/build/outputs/apk/debug/app-debug.apk
