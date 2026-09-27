@@ -18,12 +18,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "22"
-
 
       - name: Setup Java
         uses: actions/setup-java@v6
@@ -31,10 +29,9 @@ jobs:
           distribution: temurin
           java-version: "21"
 
-
       - name: Check project files
         run: |
-          echo "=== FILES ==="
+          echo "=== ROOT ==="
           ls -la
 
           echo "=== ICON ==="
@@ -42,10 +39,6 @@ jobs:
 
           echo "=== FRONTEND ==="
           ls -lh index.html
-
-          echo "=== SERVER ==="
-          ls -lh server.js
-
 
       - name: Prepare frontend
         run: |
@@ -58,11 +51,9 @@ jobs:
             cp config.js public/config.js
           fi
 
-
       - name: Install dependencies
         run: |
           npm install --include=dev
-
 
       - name: Install Capacitor
         run: |
@@ -72,101 +63,84 @@ jobs:
             @capacitor/android@8 \
             typescript@5.9.2
 
-
       - name: Check Capacitor
         run: |
           npx cap --version
           npx tsc --version
 
-
       - name: Add Android
         run: |
           npx cap add android
-
 
       - name: Sync Android
         run: |
           npx cap sync android
 
-
-      - name: Install ImageMagick
+      - name: Install Python Pillow
         run: |
-          sudo apt-get update
-          sudo apt-get install -y imagemagick
-
+          python3 -m pip install --upgrade pillow
 
       - name: Generate Android icons
         run: |
+          python3 - <<'PY'
+          from PIL import Image
+          import os
 
-          ICON="rexcvc-icon-final.png"
+          icon = "rexcvc-icon-final.png"
 
-          echo "Using icon:"
-          ls -lh "$ICON"
+          print("Using icon:", icon)
 
-          mkdir -p android/app/src/main/res/mipmap-mdpi
-          mkdir -p android/app/src/main/res/mipmap-hdpi
-          mkdir -p android/app/src/main/res/mipmap-xhdpi
-          mkdir -p android/app/src/main/res/mipmap-xxhdpi
-          mkdir -p android/app/src/main/res/mipmap-xxxhdpi
+          img = Image.open(icon).convert("RGBA")
 
-          magick "$ICON" \
-            -resize 48x48 \
-            android/app/src/main/res/mipmap-mdpi/ic_launcher.png
+          sizes = {
+              "mipmap-mdpi": 48,
+              "mipmap-hdpi": 72,
+              "mipmap-xhdpi": 96,
+              "mipmap-xxhdpi": 144,
+              "mipmap-xxxhdpi": 192,
+          }
 
-          magick "$ICON" \
-            -resize 72x72 \
-            android/app/src/main/res/mipmap-hdpi/ic_launcher.png
+          for folder, size in sizes.items():
+              output_dir = f"android/app/src/main/res/{folder}"
+              os.makedirs(output_dir, exist_ok=True)
 
-          magick "$ICON" \
-            -resize 96x96 \
-            android/app/src/main/res/mipmap-xhdpi/ic_launcher.png
+              resized = img.resize(
+                  (size, size),
+                  Image.Resampling.LANCZOS
+              )
 
-          magick "$ICON" \
-            -resize 144x144 \
-            android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
+              output = f"{output_dir}/ic_launcher.png"
+              resized.save(output, "PNG")
 
-          magick "$ICON" \
-            -resize 192x192 \
-            android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+              print("Created:", output)
 
+          print("All Android icons generated.")
+          PY
 
       - name: Generate round icons
         run: |
+          cp android/app/src/main/res/mipmap-mdpi/ic_launcher.png \
+             android/app/src/main/res/mipmap-mdpi/ic_launcher_round.png
 
-          cp \
-            android/app/src/main/res/mipmap-mdpi/ic_launcher.png \
-            android/app/src/main/res/mipmap-mdpi/ic_launcher_round.png
+          cp android/app/src/main/res/mipmap-hdpi/ic_launcher.png \
+             android/app/src/main/res/mipmap-hdpi/ic_launcher_round.png
 
-          cp \
-            android/app/src/main/res/mipmap-hdpi/ic_launcher.png \
-            android/app/src/main/res/mipmap-hdpi/ic_launcher_round.png
+          cp android/app/src/main/res/mipmap-xhdpi/ic_launcher.png \
+             android/app/src/main/res/mipmap-xhdpi/ic_launcher_round.png
 
-          cp \
-            android/app/src/main/res/mipmap-xhdpi/ic_launcher.png \
-            android/app/src/main/res/mipmap-xhdpi/ic_launcher_round.png
+          cp android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png \
+             android/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png
 
-          cp \
-            android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png \
-            android/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png
-
-          cp \
-            android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png \
-            android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png
-
+          cp android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png \
+             android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png
 
       - name: Remove adaptive icons
         run: |
-
-          rm -f \
-            android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
-
-          rm -f \
-            android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
-
+          rm -f android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
+          rm -f android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
 
       - name: Verify icons
         run: |
-
           echo "=== GENERATED ICONS ==="
 
           find android/app/src/main/res \
@@ -174,15 +148,11 @@ jobs:
             -type f \
             -print
 
-
       - name: Build APK
         working-directory: android
         run: |
-
           chmod +x gradlew
-
           ./gradlew assembleDebug
-
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
@@ -190,7 +160,6 @@ jobs:
           name: Rexcvc-debug-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
-
 
       - name: Publish APK
         uses: softprops/action-gh-release@v3
