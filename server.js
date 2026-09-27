@@ -7,12 +7,7 @@ const path = require("path");
 const crypto = require("crypto");
 
 const app = express();
-
 const PORT = process.env.PORT || 3000;
-
-/* =========================================
-   MIDDLEWARE
-========================================= */
 
 app.use(
   cors({
@@ -24,31 +19,20 @@ app.use(
 
 app.use(express.json({ limit: "1mb" }));
 
-/* =========================================
-   PLATFORM YANG DIDUKUNG
-========================================= */
-
 const ALLOWED_HOSTS = [
-  // YouTube
   "youtube.com",
   "www.youtube.com",
   "m.youtube.com",
   "youtu.be",
 
-  // TikTok
   "tiktok.com",
   "www.tiktok.com",
   "vm.tiktok.com",
   "vt.tiktok.com",
 
-  // Instagram
   "instagram.com",
   "www.instagram.com",
 ];
-
-/* =========================================
-   CEK URL
-========================================= */
 
 function isAllowedUrl(value) {
   try {
@@ -60,20 +44,15 @@ function isAllowedUrl(value) {
 
     const hostname = url.hostname.toLowerCase();
 
-    return ALLOWED_HOSTS.some((host) => {
-      return (
+    return ALLOWED_HOSTS.some(
+      (host) =>
         hostname === host ||
         hostname.endsWith("." + host)
-      );
-    });
+    );
   } catch {
     return false;
   }
 }
-
-/* =========================================
-   JALANKAN YT-DLP
-========================================= */
 
 function runYtDlp(args) {
   return new Promise((resolve, reject) => {
@@ -83,11 +62,17 @@ function runYtDlp(args) {
       {
         timeout: 10 * 60 * 1000,
         maxBuffer: 100 * 1024 * 1024,
+        env: {
+          ...process.env,
+          HOME: process.env.HOME || "/tmp",
+        },
       },
       (error, stdout, stderr) => {
         if (error) {
-          console.error("YT-DLP ERROR:");
+          console.error("=================================");
+          console.error("YT-DLP ERROR");
           console.error(stderr || error.message);
+          console.error("=================================");
 
           reject(
             new Error(
@@ -106,31 +91,38 @@ function runYtDlp(args) {
   });
 }
 
-/* =========================================
-   ROOT
-========================================= */
-
 app.get("/", (req, res) => {
   res.json({
     status: "ok",
     service: "Rexcvc Downloader",
-    version: "3.0.0",
+    version: "4.0.0",
   });
 });
-
-/* =========================================
-   HEALTH CHECK
-========================================= */
 
 app.get("/health", (req, res) => {
   res.json({
     status: "ok",
+    service: "Rexcvc Downloader",
   });
 });
 
-/* =========================================
-   AMBIL INFO VIDEO
-========================================= */
+app.get("/api/test", async (req, res) => {
+  try {
+    const output = await runYtDlp([
+      "--version",
+    ]);
+
+    res.json({
+      status: "ok",
+      yt_dlp: output.trim(),
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: "error",
+      error: error.message,
+    });
+  }
+});
 
 async function getVideoInfo(url) {
   const output = await runYtDlp([
@@ -145,10 +137,6 @@ async function getVideoInfo(url) {
 
   return JSON.parse(output);
 }
-
-/* =========================================
-   API INFO
-========================================= */
 
 app.post("/api/info", async (req, res) => {
   try {
@@ -175,7 +163,9 @@ app.post("/api/info", async (req, res) => {
 
     const info = await getVideoInfo(url);
 
-    res.json({
+    return res.json({
+      status: "ok",
+
       title:
         info.title ||
         "Rexcvc Video",
@@ -198,21 +188,15 @@ app.post("/api/info", async (req, res) => {
         null,
     });
   } catch (error) {
-    console.error(
-      "INFO ERROR:",
-      error
-    );
+    console.error("INFO ERROR:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
+      status: "error",
       error:
-        "Gagal mengambil informasi video. Pastikan link masih aktif dan video dapat diakses publik.",
+        "Gagal mengambil informasi video. Pastikan link publik dan masih aktif.",
     });
   }
 });
-
-/* =========================================
-   API DOWNLOAD
-========================================= */
 
 app.get("/api/download", async (req, res) => {
   let tempDir = null;
@@ -236,23 +220,18 @@ app.get("/api/download", async (req, res) => {
       });
     }
 
-    console.log(
-      "DOWNLOAD REQUEST:",
-      url
-    );
+    console.log("=================================");
+    console.log("DOWNLOAD REQUEST");
+    console.log(url);
+    console.log("=================================");
 
-    /* =====================================
-       BUAT FOLDER TEMPORARY
-    ===================================== */
-
-    const randomId =
-      crypto
-        .randomBytes(12)
-        .toString("hex");
+    const id = crypto
+      .randomBytes(12)
+      .toString("hex");
 
     tempDir = path.join(
       os.tmpdir(),
-      "rexcvc-" + randomId
+      `rexcvc-${id}`
     );
 
     fs.mkdirSync(tempDir, {
@@ -264,15 +243,9 @@ app.get("/api/download", async (req, res) => {
       "video.%(ext)s"
     );
 
-    /* =====================================
-       DOWNLOAD DENGAN YT-DLP
-    ===================================== */
-
     await runYtDlp([
       "--no-playlist",
-
       "--no-warnings",
-
       "--js-runtimes",
       "node",
 
@@ -282,41 +255,34 @@ app.get("/api/download", async (req, res) => {
       "--merge-output-format",
       "mp4",
 
+      "--restrict-filenames",
+
       "-o",
       outputTemplate,
 
       url,
     ]);
 
-    /* =====================================
-       CARI FILE MP4
-    ===================================== */
-
     const files =
       fs.readdirSync(tempDir);
 
-    const videoFile =
-      files.find((file) =>
+    const videoFile = files.find(
+      (file) =>
         file
           .toLowerCase()
           .endsWith(".mp4")
-      );
+    );
 
     if (!videoFile) {
       throw new Error(
-        "File MP4 tidak ditemukan setelah proses download."
+        "File MP4 tidak ditemukan."
       );
     }
 
-    const videoPath =
-      path.join(
-        tempDir,
-        videoFile
-      );
-
-    /* =====================================
-       CEK FILE
-    ===================================== */
+    const videoPath = path.join(
+      tempDir,
+      videoFile
+    );
 
     const stat =
       fs.statSync(videoPath);
@@ -336,10 +302,6 @@ app.get("/api/download", async (req, res) => {
       "bytes"
     );
 
-    /* =====================================
-       HEADER DOWNLOAD
-    ===================================== */
-
     res.status(200);
 
     res.setHeader(
@@ -357,9 +319,10 @@ app.get("/api/download", async (req, res) => {
       'attachment; filename="Rexcvc-Video.mp4"'
     );
 
-    /* =====================================
-       KIRIM FILE
-    ===================================== */
+    res.setHeader(
+      "Cache-Control",
+      "no-store"
+    );
 
     const stream =
       fs.createReadStream(
@@ -370,14 +333,14 @@ app.get("/api/download", async (req, res) => {
       "error",
       (error) => {
         console.error(
-          "FILE STREAM ERROR:",
+          "STREAM ERROR:",
           error
         );
 
         if (!res.headersSent) {
           res.status(500).json({
             error:
-              "Gagal mengirim file video.",
+              "Gagal mengirim video.",
           });
         }
       }
@@ -386,17 +349,13 @@ app.get("/api/download", async (req, res) => {
     stream.on(
       "close",
       () => {
-        cleanupTemp();
+        cleanup();
       }
     );
 
     stream.pipe(res);
 
-    /* =====================================
-       CLEANUP
-    ===================================== */
-
-    function cleanupTemp() {
+    function cleanup() {
       if (
         tempDir &&
         fs.existsSync(tempDir)
@@ -411,10 +370,10 @@ app.get("/api/download", async (req, res) => {
           );
 
           tempDir = null;
-        } catch (cleanupError) {
+        } catch (error) {
           console.error(
             "CLEANUP ERROR:",
-            cleanupError
+            error
           );
         }
       }
@@ -441,7 +400,8 @@ app.get("/api/download", async (req, res) => {
     }
 
     if (!res.headersSent) {
-      res.status(500).json({
+      return res.status(500).json({
+        status: "error",
         error:
           "Gagal mengunduh video. Pastikan link video publik dan masih aktif.",
       });
@@ -449,49 +409,12 @@ app.get("/api/download", async (req, res) => {
   }
 });
 
-/* =========================================
-   404
-========================================= */
-
 app.use((req, res) => {
   res.status(404).json({
     error:
       "Endpoint tidak ditemukan.",
   });
 });
-
-/* =========================================
-   ERROR HANDLER
-========================================= */
-
-app.use(
-  (
-    error,
-    req,
-    res,
-    next
-  ) => {
-    console.error(
-      "SERVER ERROR:",
-      error
-    );
-
-    if (
-      res.headersSent
-    ) {
-      return next(error);
-    }
-
-    res.status(500).json({
-      error:
-        "Terjadi kesalahan pada server.",
-    });
-  }
-);
-
-/* =========================================
-   START SERVER
-========================================= */
 
 app.listen(
   PORT,
@@ -512,6 +435,10 @@ app.listen(
 
     console.log(
       "================================="
+    );
+
+    console.log(
+      `Server running on port ${PORT}`
     );
   }
 );
