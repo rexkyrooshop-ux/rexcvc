@@ -2,195 +2,178 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
-  >
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <title>REXCVC Downloader</title>
 
-  <meta
-    name="description"
-    content="REXCVC video downloader untuk TikTok, Instagram, dan YouTube."
-  >
-
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-  <link
-    href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap"
-    rel="stylesheet"
-  >
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <style>
     * {
       box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
+      margin: 0;
+      padding: 0;
     }
 
-    html {
-      scroll-behavior: smooth;
+    :root {
+      --bg: #f4f4f2;
+      --card: #ffffff;
+      --text: #111111;
+      --muted: #777777;
+      --border: #dddddd;
+      --button-top: #eeeeee;
+      --button-bottom: #cfcfcf;
+      --shadow: #111111;
     }
 
     body {
-      margin: 0;
       min-height: 100vh;
-      font-family: "Inter", sans-serif;
-      color: #111;
+      font-family: Inter, Arial, sans-serif;
+      color: var(--text);
       background:
-        radial-gradient(circle at 50% 0%, rgba(0,0,0,.055), transparent 35%),
-        linear-gradient(135deg, #ffffff 0%, #f1f1f1 48%, #ffffff 100%);
+        radial-gradient(circle at 50% 0%, #ffffff 0%, transparent 42%),
+        linear-gradient(rgba(0,0,0,.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,0,0,.025) 1px, transparent 1px),
+        var(--bg);
+      background-size: auto, 34px 34px, 34px 34px;
       overflow-x: hidden;
     }
 
     body::before {
       content: "";
       position: fixed;
-      inset: 0;
+      width: 420px;
+      height: 420px;
+      border: 1px solid rgba(0,0,0,.05);
+      border-radius: 50%;
+      top: -220px;
+      left: 50%;
+      transform: translateX(-50%);
       pointer-events: none;
-      opacity: .35;
-      background-image:
-        linear-gradient(rgba(0,0,0,.035) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,0,0,.035) 1px, transparent 1px);
-      background-size: 28px 28px;
-      mask-image: linear-gradient(to bottom, black, transparent 75%);
-      z-index: 0;
     }
-
-    .page {
-      position: relative;
-      z-index: 1;
-      width: min(100%, 760px);
-      margin: 0 auto;
-      padding: 0 20px 45px;
-    }
-
-    /* SPLASH */
 
     .splash {
       position: fixed;
       inset: 0;
       z-index: 9999;
+      background: #111111;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: #ffffff;
-      animation: splashOut 1.8s ease forwards;
-      pointer-events: none;
+      animation: splashOut 1s ease 1.9s forwards;
     }
 
     .splash-title {
       font-family: "Bebas Neue", sans-serif;
-      font-size: clamp(70px, 20vw, 170px);
-      letter-spacing: .06em;
-      line-height: .8;
-      transform: translateY(90px) scale(.82);
+      font-size: clamp(80px, 24vw, 180px);
+      letter-spacing: 8px;
+      color: #ffffff;
+      transform: translateY(100px) scale(.75);
       opacity: 0;
-      animation: splashTitle 1.15s cubic-bezier(.2,.75,.2,1) .15s forwards;
+      animation: splashTitle 1.5s cubic-bezier(.16,1,.3,1) .2s forwards;
     }
 
     @keyframes splashTitle {
       0% {
+        transform: translateY(100px) scale(.75);
         opacity: 0;
-        transform: translateY(100px) scale(.8);
       }
 
-      45% {
+      60% {
+        transform: translateY(0) scale(1);
         opacity: 1;
       }
 
       100% {
+        transform: translateY(-10px) scale(1);
         opacity: 1;
-        transform: translateY(0) scale(1);
       }
     }
 
     @keyframes splashOut {
-      0%, 70% {
-        opacity: 1;
-      }
-
-      100% {
+      to {
         opacity: 0;
         visibility: hidden;
+        pointer-events: none;
       }
     }
 
-    /* HEADER */
+    .page {
+      width: min(100%, 920px);
+      margin: auto;
+      padding: 28px 18px 50px;
+    }
 
     header {
-      padding: 42px 4px 26px;
+      padding: 12px 4px 30px;
       text-align: center;
     }
 
     .brand {
       font-family: "Bebas Neue", sans-serif;
-      font-size: clamp(54px, 15vw, 92px);
-      letter-spacing: .08em;
+      font-size: clamp(58px, 16vw, 105px);
       line-height: .85;
+      letter-spacing: 5px;
     }
 
-    .mini-label {
+    .subtitle {
       margin-top: 13px;
       font-size: 10px;
       font-weight: 800;
-      letter-spacing: .28em;
-      color: #777;
+      letter-spacing: 4px;
+      color: #8a8a8a;
     }
 
     .line {
-      width: 72px;
+      width: 70px;
       height: 3px;
-      margin: 22px auto 0;
-      background: #111;
-      border-radius: 99px;
+      margin: 18px auto 0;
+      background: #111111;
     }
 
-    /* INTRO */
-
-    .intro {
-      margin: 0 0 28px;
-      text-align: center;
+    .cards {
+      display: grid;
+      gap: 18px;
     }
 
-    .intro h1 {
-      margin: 0;
-      font-size: clamp(25px, 7vw, 38px);
-      letter-spacing: -.04em;
-    }
-
-    .intro p {
-      margin: 10px auto 0;
-      max-width: 520px;
-      color: #777;
-      font-size: 14px;
-      line-height: 1.6;
-    }
-
-    /* PLATFORM CARD */
-
-    .platform-card {
+    .card {
       position: relative;
-      margin-bottom: 22px;
+      background: rgba(255,255,255,.88);
+      border: 1px solid var(--border);
+      border-radius: 20px;
       padding: 24px;
-      border: 1px solid rgba(0,0,0,.1);
-      border-radius: 25px;
-      background: rgba(255,255,255,.78);
       box-shadow:
-        0 15px 45px rgba(0,0,0,.07),
-        inset 0 1px 0 rgba(255,255,255,.95);
-      backdrop-filter: blur(14px);
+        0 2px 0 #ffffff inset,
+        0 14px 30px rgba(0,0,0,.055);
+      backdrop-filter: blur(10px);
     }
 
-    .platform-name {
-      font-size: 20px;
+    .card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 24px;
+      right: 24px;
+      height: 1px;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(0,0,0,.18),
+        transparent
+      );
+    }
+
+    .platform {
+      font-size: 23px;
       font-weight: 800;
-      letter-spacing: -.03em;
-      margin-bottom: 5px;
+      letter-spacing: -.5px;
+      margin-bottom: 7px;
     }
 
-    .platform-desc {
-      color: #777;
+    .description {
+      color: var(--muted);
       font-size: 12px;
       margin-bottom: 18px;
     }
@@ -198,135 +181,164 @@
     .input-row {
       display: flex;
       gap: 8px;
-      margin-bottom: 10px;
+      width: 100%;
     }
 
     input {
-      min-width: 0;
       flex: 1;
-      height: 52px;
-      padding: 0 15px;
+      min-width: 0;
+      height: 48px;
+      padding: 0 14px;
+      border-radius: 10px;
       border: 1px solid #d5d5d5;
-      border-radius: 14px;
-      outline: none;
-      background: #f7f7f7;
+      background: #f8f8f8;
       color: #111;
-      font-family: inherit;
-      font-size: 14px;
+      outline: none;
+      font-size: 13px;
       transition: .2s ease;
     }
 
     input:focus {
       border-color: #111;
-      background: #fff;
+      background: #ffffff;
       box-shadow: 0 0 0 3px rgba(0,0,0,.06);
     }
 
-    /* PHYSICAL BUTTON */
-
-    .btn {
-      position: relative;
-      min-height: 52px;
-      padding: 0 18px;
-      border: 1px solid #bcbcbc;
-      border-radius: 14px;
-      background:
-        linear-gradient(
-          180deg,
-          #eeeeee 0%,
-          #d8d8d8 55%,
-          #c6c6c6 100%
-        );
-      color: #111;
-      font-family: inherit;
-      font-weight: 800;
-      font-size: 13px;
-      cursor: pointer;
-      box-shadow:
-        0 5px 0 #111,
-        0 8px 16px rgba(0,0,0,.12),
-        inset 0 1px 0 rgba(255,255,255,.95);
-      transition: transform .08s ease, box-shadow .08s ease;
+    input::placeholder {
+      color: #999;
     }
 
-    .btn:active {
-      transform: translateY(4px);
-      box-shadow:
-        0 1px 0 #111,
-        0 3px 8px rgba(0,0,0,.1),
-        inset 0 1px 0 rgba(255,255,255,.8);
+    button {
+      font-family: Inter, Arial, sans-serif;
+      border: none;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
     }
 
     .paste-btn {
       flex: 0 0 auto;
+      height: 48px;
+      padding: 0 15px;
+      border-radius: 10px;
+      border: 1px solid #cfcfcf;
+      background: #ededed;
+      color: #111;
+      font-size: 12px;
+      font-weight: 700;
+      box-shadow: 0 3px 0 #111;
+      transition: transform .12s ease, box-shadow .12s ease;
+    }
+
+    .paste-btn:active {
+      transform: translateY(3px);
+      box-shadow: 0 0 0 #111;
     }
 
     .download-btn {
       width: 100%;
-      margin-top: 5px;
-      font-size: 14px;
-      letter-spacing: .02em;
+      height: 50px;
+      margin-top: 13px;
+      border-radius: 11px;
+      background: linear-gradient(
+        to bottom,
+        var(--button-top),
+        var(--button-bottom)
+      );
+      color: #111;
+      border: 1px solid #c5c5c5;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: .4px;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.95),
+        0 5px 0 var(--shadow);
+      transition: transform .12s ease, box-shadow .12s ease;
+    }
+
+    .download-btn:active {
+      transform: translateY(5px);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.95),
+        0 0 0 var(--shadow);
     }
 
     .download-btn:disabled {
-      opacity: .5;
+      opacity: .55;
       cursor: not-allowed;
       transform: none;
       box-shadow:
-        0 5px 0 #111,
-        0 8px 16px rgba(0,0,0,.08);
+        inset 0 1px 0 rgba(255,255,255,.95),
+        0 3px 0 #777;
     }
 
     .status {
-      min-height: 19px;
-      margin-top: 10px;
-      color: #777;
+      min-height: 18px;
+      margin-top: 12px;
       font-size: 11px;
+      color: #777;
       line-height: 1.5;
     }
 
-    .status.active {
+    .status.loading {
       color: #111;
     }
 
     .status.error {
-      color: #a00000;
+      color: #b00020;
     }
 
-    /* FOOTER */
+    .status.success {
+      color: #16733a;
+    }
 
     footer {
-      padding: 22px 5px 0;
       text-align: center;
+      padding: 35px 0 0;
       color: #999;
       font-size: 10px;
-      letter-spacing: .08em;
+      letter-spacing: 2px;
     }
 
-    /* RESPONSIVE */
+    .footer-brand {
+      color: #555;
+      font-weight: 800;
+    }
 
-    @media (max-width: 520px) {
-      .page {
-        padding-left: 15px;
-        padding-right: 15px;
+    @media (min-width: 700px) {
+      .cards {
+        grid-template-columns: repeat(3, 1fr);
       }
 
-      .platform-card {
-        padding: 19px;
-        border-radius: 21px;
+      .card {
+        padding: 22px;
       }
 
       .input-row {
-        gap: 7px;
-      }
-
-      input {
-        font-size: 13px;
+        display: block;
       }
 
       .paste-btn {
-        padding-left: 14px;
-        padding-right: 14px;
+        width: 100%;
+        margin-top: 8px;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .page {
+        padding-left: 12px;
+        padding-right: 12px;
+      }
+
+      .card {
+        padding: 18px;
+      }
+
+      .input-row {
+        gap: 6px;
+      }
+
+      .paste-btn {
+        padding: 0 12px;
       }
     }
   </style>
@@ -334,209 +346,184 @@
 
 <body>
 
+  <!-- SPLASH -->
   <div class="splash">
     <div class="splash-title">REXCVC</div>
   </div>
 
   <main class="page">
 
+    <!-- HEADER -->
     <header>
       <div class="brand">REXCVC</div>
-      <div class="mini-label">READY TO DOWNLOAD</div>
+      <div class="subtitle">READY TO DOWNLOAD</div>
       <div class="line"></div>
     </header>
 
-    <section class="intro">
-      <h1>Video Downloader</h1>
-      <p>
-        Download video dari TikTok, Instagram, dan YouTube
-        melalui REXCVC.
-      </p>
-    </section>
+    <!-- PLATFORM CARDS -->
+    <section class="cards">
 
-    <!-- TIKTOK -->
+      <!-- TIKTOK -->
+      <div class="card">
+        <div class="platform">TikTok</div>
+        <div class="description">
+          Masukkan link video TikTok untuk mulai mengunduh.
+        </div>
 
-    <section class="platform-card">
+        <div class="input-row">
+          <input
+            id="tiktokInput"
+            type="url"
+            inputmode="url"
+            autocomplete="off"
+            placeholder="https://www.tiktok.com/..."
+          >
 
-      <div class="platform-name">TikTok</div>
-
-      <div class="platform-desc">
-        Tempel link video TikTok kamu.
-      </div>
-
-      <div class="input-row">
-        <input
-          id="tiktokInput"
-          type="url"
-          inputmode="url"
-          autocomplete="off"
-          placeholder="https://www.tiktok.com/..."
-        >
-
-        <button
-          class="btn paste-btn"
-          type="button"
-          onclick="pasteLink('tiktokInput', 'tiktokStatus')"
-        >
-          Paste
-        </button>
-      </div>
-
-      <button
-        id="tiktokDownload"
-        class="btn download-btn"
-        type="button"
-        onclick="downloadVideo('tiktokInput', 'tiktokStatus', this)"
-      >
-        Download
-      </button>
-
-      <div id="tiktokStatus" class="status"></div>
-
-    </section>
-
-    <!-- INSTAGRAM -->
-
-    <section class="platform-card">
-
-      <div class="platform-name">Instagram</div>
-
-      <div class="platform-desc">
-        Tempel link Reel atau video Instagram.
-      </div>
-
-      <div class="input-row">
-        <input
-          id="instagramInput"
-          type="url"
-          inputmode="url"
-          autocomplete="off"
-          placeholder="https://www.instagram.com/..."
-        >
+          <button
+            class="paste-btn"
+            type="button"
+            onclick="pasteLink('tiktokInput','tiktokStatus')"
+          >
+            Paste
+          </button>
+        </div>
 
         <button
-          class="btn paste-btn"
+          class="download-btn"
           type="button"
-          onclick="pasteLink('instagramInput', 'instagramStatus')"
+          onclick="downloadVideo('tiktokInput','tiktokStatus',this)"
         >
-          Paste
+          Download Video
         </button>
+
+        <div id="tiktokStatus" class="status"></div>
       </div>
 
-      <button
-        id="instagramDownload"
-        class="btn download-btn"
-        type="button"
-        onclick="downloadVideo('instagramInput', 'instagramStatus', this)"
-      >
-        Download
-      </button>
 
-      <div id="instagramStatus" class="status"></div>
+      <!-- INSTAGRAM -->
+      <div class="card">
+        <div class="platform">Instagram</div>
+        <div class="description">
+          Masukkan link Reels atau video Instagram untuk mulai mengunduh.
+        </div>
 
-    </section>
+        <div class="input-row">
+          <input
+            id="instagramInput"
+            type="url"
+            inputmode="url"
+            autocomplete="off"
+            placeholder="https://www.instagram.com/..."
+          >
 
-    <!-- YOUTUBE -->
-
-    <section class="platform-card">
-
-      <div class="platform-name">YouTube</div>
-
-      <div class="platform-desc">
-        Tempel link video YouTube.
-      </div>
-
-      <div class="input-row">
-        <input
-          id="youtubeInput"
-          type="url"
-          inputmode="url"
-          autocomplete="off"
-          placeholder="https://www.youtube.com/watch?v=..."
-        >
+          <button
+            class="paste-btn"
+            type="button"
+            onclick="pasteLink('instagramInput','instagramStatus')"
+          >
+            Paste
+          </button>
+        </div>
 
         <button
-          class="btn paste-btn"
+          class="download-btn"
           type="button"
-          onclick="pasteLink('youtubeInput', 'youtubeStatus')"
+          onclick="downloadVideo('instagramInput','instagramStatus',this)"
         >
-          Paste
+          Download Video
         </button>
+
+        <div id="instagramStatus" class="status"></div>
       </div>
 
-      <button
-        id="youtubeDownload"
-        class="btn download-btn"
-        type="button"
-        onclick="downloadVideo('youtubeInput', 'youtubeStatus', this)"
-      >
-        Download
-      </button>
 
-      <div id="youtubeStatus" class="status"></div>
+      <!-- YOUTUBE -->
+      <div class="card">
+        <div class="platform">YouTube</div>
+        <div class="description">
+          Masukkan link video YouTube untuk mulai mengunduh.
+        </div>
+
+        <div class="input-row">
+          <input
+            id="youtubeInput"
+            type="url"
+            inputmode="url"
+            autocomplete="off"
+            placeholder="https://www.youtube.com/..."
+          >
+
+          <button
+            class="paste-btn"
+            type="button"
+            onclick="pasteLink('youtubeInput','youtubeStatus')"
+          >
+            Paste
+          </button>
+        </div>
+
+        <button
+          class="download-btn"
+          type="button"
+          onclick="downloadVideo('youtubeInput','youtubeStatus',this)"
+        >
+          Download Video
+        </button>
+
+        <div id="youtubeStatus" class="status"></div>
+      </div>
 
     </section>
 
     <footer>
-      REXCVC • VIDEO DOWNLOADER
+      <span class="footer-brand">REXCVC</span>
+      &nbsp;•&nbsp;
+      VIDEO DOWNLOADER
     </footer>
 
   </main>
 
-  <script>
 
+  <script>
     /*
-      BACKEND REXCVC
+      =====================================================
+      REXCVC BACKEND
+      =====================================================
     */
 
-    const API_BASE =
-      "https://rexcvc-f11rbr.cranl.net";
+    const API_BASE = "https://rexcvc-f1l1rbr.cranl.net";
 
 
     /*
-      PASTE CLIPBOARD
+      =====================================================
+      PASTE
+      =====================================================
     */
 
     async function pasteLink(inputId, statusId) {
-
-      const input =
-        document.getElementById(inputId);
-
-      const status =
-        document.getElementById(statusId);
+      const input = document.getElementById(inputId);
+      const status = document.getElementById(statusId);
 
       try {
-
-        if (!navigator.clipboard) {
-          throw new Error("Clipboard tidak tersedia.");
-        }
-
-        const text =
-          await navigator.clipboard.readText();
+        const text = await navigator.clipboard.readText();
 
         if (!text) {
-          status.textContent =
-            "Clipboard kosong.";
-
+          status.textContent = "Clipboard kosong.";
+          status.className = "status error";
           return;
         }
 
-        input.value =
-          text.trim();
+        input.value = text.trim();
 
-        status.className =
-          "status active";
-
-        status.textContent =
-          "Link berhasil ditempel.";
+        status.textContent = "Link berhasil ditempel.";
+        status.className = "status success";
 
       } catch (error) {
 
-        status.className =
-          "status error";
-
         status.textContent =
-          "Clipboard tidak tersedia. Paste link secara manual.";
+          "Paste otomatis tidak tersedia. Tekan lama kolom lalu pilih Paste.";
+
+        status.className = "status error";
 
         input.focus();
       }
@@ -544,107 +531,160 @@
 
 
     /*
-      CHECK URL
+      =====================================================
+      CEK URL
+      =====================================================
     */
 
-    function isSupportedUrl(value) {
-
+    function getPlatform(url) {
       try {
+        const parsed = new URL(url);
+        const host = parsed.hostname.toLowerCase();
 
-        const url =
-          new URL(value);
-
-        if (url.protocol !== "https:") {
-          return false;
+        if (
+          host === "youtube.com" ||
+          host === "www.youtube.com" ||
+          host === "youtu.be" ||
+          host === "m.youtube.com"
+        ) {
+          return "youtube";
         }
 
-        const host =
-          url.hostname.toLowerCase();
+        if (
+          host === "tiktok.com" ||
+          host === "www.tiktok.com" ||
+          host === "vm.tiktok.com"
+        ) {
+          return "tiktok";
+        }
 
-        const allowed = [
-          "youtube.com",
-          "www.youtube.com",
-          "m.youtube.com",
-          "youtu.be",
-          "tiktok.com",
-          "www.tiktok.com",
-          "vm.tiktok.com",
-          "instagram.com",
-          "www.instagram.com"
-        ];
+        if (
+          host === "instagram.com" ||
+          host === "www.instagram.com"
+        ) {
+          return "instagram";
+        }
 
-        return allowed.some(
-          item =>
-            host === item ||
-            host.endsWith("." + item)
-        );
+        return null;
 
       } catch {
-
-        return false;
+        return null;
       }
     }
 
 
     /*
-      DOWNLOAD VIDEO
+      =====================================================
+      DOWNLOAD
+      =====================================================
     */
 
-    async function downloadVideo(
-      inputId,
-      statusId,
-      button
-    ) {
+    async function downloadVideo(inputId, statusId, button) {
 
-      const input =
-        document.getElementById(inputId);
+      const input = document.getElementById(inputId);
+      const status = document.getElementById(statusId);
 
-      const status =
-        document.getElementById(statusId);
-
-      const url =
-        input.value.trim();
-
+      const url = input.value.trim();
 
       if (!url) {
-
-        status.className =
-          "status error";
-
-        status.textContent =
-          "Masukkan link terlebih dahulu.";
-
+        status.textContent = "Masukkan link terlebih dahulu.";
+        status.className = "status error";
         input.focus();
-
         return;
       }
 
+      const platform = getPlatform(url);
 
-      if (!isSupportedUrl(url)) {
-
-        status.className =
-          "status error";
-
+      if (!platform) {
         status.textContent =
-          "Link harus berasal dari TikTok, Instagram, atau YouTube.";
+          "Link tidak dikenali. Gunakan link TikTok, Instagram, atau YouTube.";
 
+        status.className = "status error";
         return;
       }
 
+
+      /*
+        Tombol loading
+      */
 
       button.disabled = true;
-
-      status.className =
-        "status active";
+      button.textContent = "Memproses...";
 
       status.textContent =
-        "Menyiapkan download...";
+        "Sedang mengambil video. Mohon tunggu...";
+
+      status.className = "status loading";
 
 
       try {
 
         /*
-          Endpoint download backend.
+          Cek backend terlebih dahulu
+        */
+
+        const response = await fetch(
+          API_BASE +
+          "/api/info?url=" +
+          encodeURIComponent(url),
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              url: url
+            })
+          }
+        );
+
+
+        /*
+          Jika backend mengembalikan error
+        */
+
+        if (!response.ok) {
+
+          let message =
+            "Video tidak dapat diproses.";
+
+          try {
+            const data = await response.json();
+
+            if (data.error) {
+              message = data.error;
+            }
+
+          } catch {}
+
+          throw new Error(message);
+        }
+
+
+        const info = await response.json();
+
+
+        /*
+          Tampilkan informasi video
+        */
+
+        if (info.title) {
+
+          status.textContent =
+            "Video ditemukan: " +
+            info.title +
+            ". Menyiapkan download...";
+
+        } else {
+
+          status.textContent =
+            "Video ditemukan. Menyiapkan download...";
+
+        }
+
+
+        /*
+          Buat URL download
         */
 
         const downloadUrl =
@@ -654,50 +694,69 @@
 
 
         /*
-          Buka endpoint download.
-          Backend akan mengirim file MP4
-          dengan nama Rexcvc-Video.mp4.
+          Buka endpoint download
         */
 
-        const newWindow =
-          window.open(
-            downloadUrl,
-            "_blank"
-          );
+        const link = document.createElement("a");
 
+        link.href = downloadUrl;
+        link.target = "_blank";
+        link.rel = "noopener";
 
-        /*
-          Beberapa WebView memblokir
-          window.open. Jika itu terjadi,
-          navigasikan halaman secara langsung.
-        */
+        document.body.appendChild(link);
 
-        if (!newWindow) {
-          window.location.href =
-            downloadUrl;
-        }
+        link.click();
+
+        link.remove();
 
 
         status.textContent =
-          "Download sedang diproses. Tunggu sampai file selesai.";
+          "Download dimulai. Jika halaman baru terbuka, tunggu prosesnya selesai.";
+
+        status.className = "status success";
+
 
       } catch (error) {
 
         console.error(error);
 
-        status.className =
-          "status error";
-
         status.textContent =
-          "Gagal memulai download. Coba lagi.";
-      }
+          error.message ||
+          "Gagal memproses video. Coba link lain.";
 
+        status.className = "status error";
 
-      setTimeout(() => {
+      } finally {
+
         button.disabled = false;
-      }, 3000);
+        button.textContent = "Download Video";
+
+      }
     }
 
+
+    /*
+      =====================================================
+      ENTER KEY
+      =====================================================
+    */
+
+    document.querySelectorAll("input").forEach(input => {
+
+      input.addEventListener("keydown", function(event) {
+
+        if (event.key === "Enter") {
+
+          const button =
+            this.closest(".card")
+              .querySelector(".download-btn");
+
+          button.click();
+        }
+
+      });
+
+    });
   </script>
 
 </body>
