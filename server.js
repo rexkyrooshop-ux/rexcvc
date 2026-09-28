@@ -7,71 +7,71 @@ const path = require("path");
 const crypto = require("crypto");
 
 const app = express();
+
 const PORT = process.env.PORT || 3000;
 
+const APP_NAME = "Rexcvc Downloader";
+const VERSION = "6.0.0";
+
 /*
-========================================
+==================================================
 CORS
-========================================
-*/
-
-const corsOptions = {
-  origin: "*",
-  methods: ["GET", "POST", "OPTIONS"],
-  allowedHeaders: [
-    "Content-Type",
-    "Accept",
-    "Origin",
-  ],
-  exposedHeaders: [
-    "Content-Length",
-    "Content-Disposition",
-  ],
-  optionsSuccessStatus: 200,
-};
-
-app.use(cors(corsOptions));
-
-/*
-========================================
-BODY PARSER
-========================================
+==================================================
 */
 
 app.use(
-  express.json({
-    limit: "1mb",
+  cors({
+    origin: "*",
+    methods: ["GET", "POST", "OPTIONS"],
+    allowedHeaders: [
+      "Content-Type",
+      "Accept",
+      "Origin"
+    ],
+    exposedHeaders: [
+      "Content-Length",
+      "Content-Disposition"
+    ]
   })
 );
 
 /*
-========================================
-ALLOWED PLATFORMS
-========================================
+==================================================
+BODY PARSER
+==================================================
+*/
+
+app.use(
+  express.json({
+    limit: "1mb"
+  })
+);
+
+/*
+==================================================
+ALLOWED HOSTS
+==================================================
 */
 
 const ALLOWED_HOSTS = [
-  // YouTube
   "youtube.com",
   "www.youtube.com",
   "m.youtube.com",
   "youtu.be",
 
-  // TikTok
   "tiktok.com",
   "www.tiktok.com",
   "vm.tiktok.com",
   "vt.tiktok.com",
 
-  // Instagram
   "instagram.com",
-  "www.instagram.com",
+  "www.instagram.com"
 ];
 
 /*
-========================================
+==================================================
 URL VALIDATION
-========================================
+==================================================
 */
 
 function isAllowedUrl(value) {
@@ -95,149 +95,196 @@ function isAllowedUrl(value) {
 }
 
 /*
-========================================
-RUN YT-DLP
-========================================
+==================================================
+RUN COMMAND
+==================================================
 */
 
-function runYtDlp(args) {
+function runCommand(command, args, options = {}) {
   return new Promise((resolve, reject) => {
     execFile(
-      "yt-dlp",
+      command,
       args,
       {
-        timeout: 10 * 60 * 1000,
-
-        maxBuffer:
-          100 * 1024 * 1024,
+        timeout: options.timeout || 15 * 60 * 1000,
+        maxBuffer: 200 * 1024 * 1024,
 
         env: {
           ...process.env,
-          HOME:
-            process.env.HOME || "/tmp",
-        },
+          HOME: process.env.HOME || os.tmpdir()
+        }
       },
-
       (error, stdout, stderr) => {
         if (error) {
-          console.error(
-            "================================="
-          );
+          const message =
+            stderr?.trim() ||
+            stdout?.trim() ||
+            error.message ||
+            "Command gagal.";
 
-          console.error(
-            "YT-DLP ERROR"
-          );
-
-          console.error(
-            stderr || error.message
-          );
-
-          console.error(
-            "================================="
-          );
+          console.error("\n==============================");
+          console.error("COMMAND ERROR");
+          console.error("COMMAND:", command);
+          console.error("ARGS:", args.join(" "));
+          console.error("ERROR:", message);
+          console.error("==============================\n");
 
           reject(
-            new Error(
-              stderr ||
-                error.message ||
-                "yt-dlp gagal."
-            )
+            new Error(message)
           );
 
           return;
         }
 
-        resolve(stdout);
+        resolve({
+          stdout: stdout || "",
+          stderr: stderr || ""
+        });
       }
     );
   });
 }
 
 /*
-========================================
+==================================================
+YT-DLP
+==================================================
+*/
+
+function runYtDlp(args, options = {}) {
+  return runCommand(
+    "yt-dlp",
+    args,
+    options
+  );
+}
+
+/*
+==================================================
 ROOT
-========================================
+==================================================
 */
 
 app.get("/", (req, res) => {
   res.json({
     status: "ok",
-    service: "Rexcvc Downloader",
-    version: "5.0.0",
+    service: APP_NAME,
+    version: VERSION
   });
 });
 
 /*
-========================================
-HEALTH CHECK
-========================================
+==================================================
+HEALTH
+==================================================
 */
 
 app.get("/health", (req, res) => {
   res.json({
     status: "ok",
-    service: "Rexcvc Downloader",
-    version: "5.0.0",
+    service: APP_NAME,
+    version: VERSION
   });
 });
 
 /*
-========================================
-API TEST
-========================================
+==================================================
+SYSTEM TEST
+==================================================
 */
 
 app.get("/api/test", async (req, res) => {
+  const result = {
+    status: "ok",
+    yt_dlp: null,
+    node: null,
+    ffmpeg: null
+  };
+
   try {
-    const output =
-      await runYtDlp([
-        "--version",
-      ]);
+    const yt =
+      await runCommand(
+        "yt-dlp",
+        ["--version"]
+      );
 
-    res.json({
-      status: "ok",
-      yt_dlp: output.trim(),
-    });
+    result.yt_dlp =
+      yt.stdout.trim();
   } catch (error) {
-    console.error(
-      "API TEST ERROR:",
-      error
-    );
-
-    res.status(500).json({
-      status: "error",
-      error: error.message,
-    });
+    result.status = "error";
+    result.yt_dlp =
+      error.message;
   }
+
+  try {
+    const node =
+      await runCommand(
+        "node",
+        ["--version"]
+      );
+
+    result.node =
+      node.stdout.trim();
+  } catch (error) {
+    result.status = "error";
+    result.node =
+      error.message;
+  }
+
+  try {
+    const ffmpeg =
+      await runCommand(
+        "ffmpeg",
+        ["-version"]
+      );
+
+    const firstLine =
+      ffmpeg.stdout
+        .split("\n")[0]
+        .trim();
+
+    result.ffmpeg =
+      firstLine;
+  } catch (error) {
+    result.status = "error";
+    result.ffmpeg =
+      error.message;
+  }
+
+  res.json(result);
 });
 
 /*
-========================================
-GET VIDEO INFO
-========================================
+==================================================
+VIDEO INFO
+==================================================
 */
 
 async function getVideoInfo(url) {
-  const output =
+  const result =
     await runYtDlp([
       "--dump-single-json",
       "--no-download",
       "--no-playlist",
-      "--no-warnings",
 
       "--js-runtimes",
       "node",
 
-      url,
+      "--remote-components",
+      "ejs:npm",
+
+      url
     ]);
 
-  return JSON.parse(output);
+  return JSON.parse(
+    result.stdout
+  );
 }
 
 /*
-========================================
-FORMAT VIDEO INFO
-========================================
+==================================================
+FORMAT INFO
+==================================================
 */
 
 function formatVideoInfo(info) {
@@ -263,156 +310,19 @@ function formatVideoInfo(info) {
     platform:
       info.extractor_key ||
       info.extractor ||
-      null,
+      null
   };
 }
 
 /*
-========================================
+==================================================
 GET /api/info
-========================================
-
-Dipakai oleh APK.
-
-Contoh:
-
-/api/info?url=https%3A%2F%2F...
-*/
-
-app.get("/api/info", async (req, res) => {
-  try {
-    const url =
-      typeof req.query.url === "string"
-        ? req.query.url.trim()
-        : "";
-
-    if (!url) {
-      return res.status(400).json({
-        status: "error",
-        error:
-          "Link video belum dimasukkan.",
-      });
-    }
-
-    if (!isAllowedUrl(url)) {
-      return res.status(400).json({
-        status: "error",
-        error:
-          "URL tidak valid atau platform tidak didukung.",
-      });
-    }
-
-    console.log(
-      "================================="
-    );
-
-    console.log(
-      "INFO GET REQUEST"
-    );
-
-    console.log(url);
-
-    console.log(
-      "================================="
-    );
-
-    const info =
-      await getVideoInfo(url);
-
-    return res.json(
-      formatVideoInfo(info)
-    );
-  } catch (error) {
-    console.error(
-      "INFO GET ERROR:",
-      error
-    );
-
-    return res.status(500).json({
-      status: "error",
-      error:
-        "Gagal mengambil informasi video. Pastikan link publik dan masih aktif.",
-    });
-  }
-});
-
-/*
-========================================
-POST /api/info
-========================================
-
-Tetap dipertahankan sebagai fallback.
-*/
-
-app.post("/api/info", async (req, res) => {
-  try {
-    const url =
-      req.body &&
-      typeof req.body.url === "string"
-        ? req.body.url.trim()
-        : "";
-
-    if (!url) {
-      return res.status(400).json({
-        status: "error",
-        error:
-          "Link video belum dimasukkan.",
-      });
-    }
-
-    if (!isAllowedUrl(url)) {
-      return res.status(400).json({
-        status: "error",
-        error:
-          "URL tidak valid atau platform tidak didukung.",
-      });
-    }
-
-    console.log(
-      "================================="
-    );
-
-    console.log(
-      "INFO POST REQUEST"
-    );
-
-    console.log(url);
-
-    console.log(
-      "================================="
-    );
-
-    const info =
-      await getVideoInfo(url);
-
-    return res.json(
-      formatVideoInfo(info)
-    );
-  } catch (error) {
-    console.error(
-      "INFO POST ERROR:",
-      error
-    );
-
-    return res.status(500).json({
-      status: "error",
-      error:
-        "Gagal mengambil informasi video. Pastikan link publik dan masih aktif.",
-    });
-  }
-});
-
-/*
-========================================
-DOWNLOAD VIDEO
-========================================
+==================================================
 */
 
 app.get(
-  "/api/download",
+  "/api/info",
   async (req, res) => {
-    let tempDir = null;
-
     try {
       const url =
         typeof req.query.url === "string"
@@ -423,7 +333,7 @@ app.get(
         return res.status(400).json({
           status: "error",
           error:
-            "Link video belum dimasukkan.",
+            "Link video belum dimasukkan."
         });
       }
 
@@ -431,12 +341,146 @@ app.get(
         return res.status(400).json({
           status: "error",
           error:
-            "URL tidak valid atau platform tidak didukung.",
+            "URL tidak valid atau platform tidak didukung."
         });
       }
 
       console.log(
-        "================================="
+        "\n================================="
+      );
+
+      console.log(
+        "INFO REQUEST"
+      );
+
+      console.log(url);
+
+      console.log(
+        "=================================\n"
+      );
+
+      const info =
+        await getVideoInfo(url);
+
+      return res.json(
+        formatVideoInfo(info)
+      );
+
+    } catch (error) {
+      console.error(
+        "INFO ERROR:",
+        error
+      );
+
+      return res.status(500).json({
+        status: "error",
+        error:
+          error.message ||
+          "Gagal mengambil informasi video."
+      });
+    }
+  }
+);
+
+/*
+==================================================
+POST /api/info
+==================================================
+*/
+
+app.post(
+  "/api/info",
+  async (req, res) => {
+    try {
+      const url =
+        req.body &&
+        typeof req.body.url === "string"
+          ? req.body.url.trim()
+          : "";
+
+      if (!url) {
+        return res.status(400).json({
+          status: "error",
+          error:
+            "Link video belum dimasukkan."
+        });
+      }
+
+      if (!isAllowedUrl(url)) {
+        return res.status(400).json({
+          status: "error",
+          error:
+            "URL tidak valid atau platform tidak didukung."
+        });
+      }
+
+      const info =
+        await getVideoInfo(url);
+
+      return res.json(
+        formatVideoInfo(info)
+      );
+
+    } catch (error) {
+      console.error(
+        "POST INFO ERROR:",
+        error
+      );
+
+      return res.status(500).json({
+        status: "error",
+        error:
+          error.message ||
+          "Gagal mengambil informasi video."
+      });
+    }
+  }
+);
+
+/*
+==================================================
+DOWNLOAD
+==================================================
+*/
+
+app.get(
+  "/api/download",
+  async (req, res) => {
+
+    let tempDir = null;
+    let videoPath = null;
+
+    try {
+
+      const url =
+        typeof req.query.url === "string"
+          ? req.query.url.trim()
+          : "";
+
+      /*
+      ------------------------------------------
+      VALIDASI URL
+      ------------------------------------------
+      */
+
+      if (!url) {
+        return res.status(400).json({
+          status: "error",
+          error:
+            "Link video belum dimasukkan."
+        });
+      }
+
+      if (!isAllowedUrl(url)) {
+        return res.status(400).json({
+          status: "error",
+          error:
+            "URL tidak valid atau platform tidak didukung."
+        });
+      }
+
+      console.log(
+        "\n================================="
       );
 
       console.log(
@@ -446,13 +490,13 @@ app.get(
       console.log(url);
 
       console.log(
-        "================================="
+        "=================================\n"
       );
 
       /*
-      ========================================
+      ------------------------------------------
       TEMP DIRECTORY
-      ========================================
+      ------------------------------------------
       */
 
       const id =
@@ -460,19 +504,23 @@ app.get(
           .randomBytes(12)
           .toString("hex");
 
-      tempDir = path.join(
-        os.tmpdir(),
-        `rexcvc-${id}`
+      tempDir =
+        path.join(
+          os.tmpdir(),
+          `rexcvc-${id}`
+        );
+
+      fs.mkdirSync(
+        tempDir,
+        {
+          recursive: true
+        }
       );
 
-      fs.mkdirSync(tempDir, {
-        recursive: true,
-      });
-
       /*
-      ========================================
+      ------------------------------------------
       OUTPUT
-      ========================================
+      ------------------------------------------
       */
 
       const outputTemplate =
@@ -482,42 +530,75 @@ app.get(
         );
 
       /*
-      ========================================
-      YT-DLP DOWNLOAD
-      ========================================
+      ------------------------------------------
+      DOWNLOAD YT-DLP
+      ------------------------------------------
       */
 
       await runYtDlp([
         "--no-playlist",
-        "--no-warnings",
+
+        "--newline",
 
         "--js-runtimes",
         "node",
 
+        "--remote-components",
+        "ejs:npm",
+
+        /*
+        Prioritaskan MP4.
+        Kalau tidak tersedia, gunakan format
+        terbaik yang tersedia.
+        */
+
         "-f",
-        "bv*+ba/b",
+        "bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]/bv*+ba/b",
 
         "--merge-output-format",
         "mp4",
 
+        /*
+        Nama file aman
+        */
+
         "--restrict-filenames",
+
+        /*
+        Output
+        */
 
         "-o",
         outputTemplate,
 
-        url,
-      ]);
+        url
+
+      ], {
+        timeout:
+          15 * 60 * 1000
+      });
 
       /*
-      ========================================
-      FIND MP4
-      ========================================
+      ------------------------------------------
+      CARI FILE
+      ------------------------------------------
       */
 
       const files =
-        fs.readdirSync(tempDir);
+        fs.readdirSync(
+          tempDir
+        );
 
-      const videoFile =
+      console.log(
+        "FILES:",
+        files
+      );
+
+      /*
+      Cari MP4 dulu
+      */
+
+      let videoFile =
         files.find(
           (file) =>
             file
@@ -525,26 +606,44 @@ app.get(
               .endsWith(".mp4")
         );
 
+      /*
+      Kalau MP4 tidak ada,
+      cari video lain
+      */
+
+      if (!videoFile) {
+
+        videoFile =
+          files.find(
+            (file) =>
+              /\.(webm|mkv|mov|avi)$/i.test(
+                file
+              )
+          );
+      }
+
       if (!videoFile) {
         throw new Error(
-          "File MP4 tidak ditemukan."
+          "yt-dlp selesai tetapi file video tidak ditemukan. Pastikan FFmpeg tersedia di server."
         );
       }
 
-      const videoPath =
+      videoPath =
         path.join(
           tempDir,
           videoFile
         );
 
       /*
-      ========================================
-      CHECK FILE
-      ========================================
+      ------------------------------------------
+      FILE CHECK
+      ------------------------------------------
       */
 
       const stat =
-        fs.statSync(videoPath);
+        fs.statSync(
+          videoPath
+        );
 
       if (
         !stat.isFile() ||
@@ -557,14 +656,19 @@ app.get(
 
       console.log(
         "VIDEO READY:",
+        videoPath
+      );
+
+      console.log(
+        "SIZE:",
         stat.size,
         "bytes"
       );
 
       /*
-      ========================================
-      RESPONSE HEADERS
-      ========================================
+      ------------------------------------------
+      RESPONSE
+      ------------------------------------------
       */
 
       res.status(200);
@@ -586,13 +690,13 @@ app.get(
 
       res.setHeader(
         "Cache-Control",
-        "no-store"
+        "no-store, no-cache, must-revalidate"
       );
 
       /*
-      ========================================
+      ------------------------------------------
       STREAM
-      ========================================
+      ------------------------------------------
       */
 
       const stream =
@@ -603,6 +707,7 @@ app.get(
       stream.on(
         "error",
         (error) => {
+
           console.error(
             "STREAM ERROR:",
             error
@@ -612,118 +717,162 @@ app.get(
             res.status(500).json({
               status: "error",
               error:
-                "Gagal mengirim video.",
+                "Gagal mengirim file video."
             });
           }
+
         }
       );
 
       stream.on(
-        "close",
+        "end",
         () => {
+
+          console.log(
+            "DOWNLOAD FINISHED"
+          );
+
           cleanup();
+
         }
       );
 
       stream.pipe(res);
 
       /*
-      ========================================
+      ------------------------------------------
       CLEANUP
-      ========================================
+      ------------------------------------------
       */
 
       function cleanup() {
+
         if (
           tempDir &&
           fs.existsSync(tempDir)
         ) {
+
           try {
+
             fs.rmSync(
               tempDir,
               {
                 recursive: true,
-                force: true,
+                force: true
               }
             );
 
             tempDir = null;
+
           } catch (error) {
+
             console.error(
               "CLEANUP ERROR:",
               error
             );
+
           }
+
         }
+
       }
+
     } catch (error) {
+
       console.error(
-        "DOWNLOAD ERROR:",
+        "\n================================="
+      );
+
+      console.error(
+        "DOWNLOAD ERROR"
+      );
+
+      console.error(
         error
       );
 
+      console.error(
+        "=================================\n"
+      );
+
       /*
-      Cleanup jika gagal
+      ------------------------------------------
+      CLEANUP
+      ------------------------------------------
       */
 
       if (
         tempDir &&
         fs.existsSync(tempDir)
       ) {
+
         try {
+
           fs.rmSync(
             tempDir,
             {
               recursive: true,
-              force: true,
+              force: true
             }
           );
+
         } catch {}
+
       }
 
       /*
-      Response error
+      ------------------------------------------
+      ERROR RESPONSE
+      ------------------------------------------
       */
 
       if (!res.headersSent) {
+
         return res.status(500).json({
           status: "error",
           error:
-            "Gagal mengunduh video. Pastikan link video publik dan masih aktif.",
+            error.message ||
+            "Gagal mengunduh video."
         });
+
       }
+
     }
+
   }
 );
 
 /*
-========================================
+==================================================
 404
-========================================
+==================================================
 */
 
 app.use(
   (req, res) => {
+
     res.status(404).json({
       status: "error",
       error:
-        "Endpoint tidak ditemukan.",
+        "Endpoint tidak ditemukan."
     });
+
   }
 );
 
 /*
-========================================
+==================================================
 START SERVER
-========================================
+==================================================
 */
 
 app.listen(
   PORT,
   "0.0.0.0",
   () => {
+
     console.log(
-      "================================="
+      "\n================================="
     );
 
     console.log(
@@ -731,7 +880,8 @@ app.listen(
     );
 
     console.log(
-      "VERSION: 5.0.0"
+      "VERSION:",
+      VERSION
     );
 
     console.log(
@@ -740,11 +890,8 @@ app.listen(
     );
 
     console.log(
-      "================================="
+      "=================================\n"
     );
 
-    console.log(
-      `Server running on port ${PORT}`
-    );
   }
 );
