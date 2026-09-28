@@ -1,1240 +1,1634 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-  >
-
-  <title>REXCVC</title>
-
-  <style>
-    * {
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    html,
-    body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      min-height: 100%;
-      background: #ffffff;
-      color: #000000;
-      font-family: Arial, Helvetica, sans-serif;
-    }
-
-    body {
-      overflow-x: hidden;
-    }
-
-    button,
-    input {
-      font-family: inherit;
-    }
-
-    /* =========================
-       SPLASH
-    ========================= */
-
-    #splash {
-      position: fixed;
-      inset: 0;
-      z-index: 9999;
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-
-      background: #ffffff;
-
-      transition:
-        opacity 0.5s ease,
-        visibility 0.5s ease;
-    }
-
-    #splash.hide {
-      opacity: 0;
-      visibility: hidden;
-    }
-
-    .splash-title {
-      color: #000000;
-      font-size: 42px;
-      font-weight: 900;
-      letter-spacing: 7px;
-
-      animation:
-        splashPulse 1.2s ease-in-out infinite alternate;
-    }
-
-    .splash-subtitle {
-      margin-top: 10px;
-
-      color: #000000;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 4px;
-
-      opacity: 0.55;
-    }
-
-    .splash-line {
-      width: 70px;
-      height: 2px;
-
-      margin-top: 20px;
-
-      background: #000000;
-
-      animation:
-        splashLine 1.2s ease-in-out infinite alternate;
-    }
-
-    @keyframes splashPulse {
-      from {
-        opacity: 0.35;
-        transform: scale(0.95);
-      }
-
-      to {
-        opacity: 1;
-        transform: scale(1);
-      }
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
 
-    @keyframes splashLine {
-      from {
-        width: 30px;
-        opacity: 0.25;
-      }
+<title>REXCVC Downloader</title>
 
-      to {
-        width: 110px;
-        opacity: 1;
-      }
-    }
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-    /* =========================
-       APP
-    ========================= */
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    .app {
-      width: 100%;
-      min-height: 100vh;
+<style>
 
-      padding:
-        24px
-        18px
-        40px;
+/* ================================
+   RESET
+================================ */
 
-      background: #ffffff;
-    }
+*{
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
+}
 
-    .container {
-      width: 100%;
-      max-width: 520px;
-      margin: 0 auto;
-    }
+html,
+body{
+  margin:0;
+  padding:0;
+  width:100%;
+  min-height:100%;
+  background:#fff;
+}
 
-    /* =========================
-       HEADER
-    ========================= */
+body{
+  font-family:"Plus Jakarta Sans",sans-serif;
+  color:#111;
+  overflow-x:hidden;
 
-    .header {
-      padding:
-        10px
-        2px
-        25px;
-    }
+  user-select:none;
+  -webkit-user-select:none;
+}
 
-    .logo-text {
-      color: #000000;
 
-      font-size: 32px;
-      font-weight: 900;
+/* ================================
+   INTRO
+================================ */
 
-      letter-spacing: 4px;
-    }
+.intro{
+  position:fixed;
+  inset:0;
+  z-index:9999;
 
-    .tagline {
-      margin-top: 7px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 
-      color: #777777;
+  background:#fff;
+  overflow:hidden;
 
-      font-size: 11px;
-      font-weight: 600;
+  animation:introOut .8s ease 3.35s forwards;
+}
 
-      letter-spacing: 2px;
-    }
+.intro-glow{
+  position:absolute;
 
-    /* =========================
-       INPUT
-    ========================= */
+  width:230px;
+  height:230px;
 
-    .input-wrapper {
-      display: flex;
-      align-items: center;
+  border-radius:50%;
 
-      width: 100%;
+  background:rgba(0,0,0,.055);
 
-      padding: 6px;
+  filter:blur(40px);
 
-      background: #f4f4f4;
+  opacity:0;
 
-      border: 1px solid #dddddd;
-      border-radius: 18px;
-    }
+  animation:
+    glowIn 1s ease .2s forwards,
+    glowPulse 2s ease 1s infinite;
+}
 
-    #urlInput {
-      flex: 1;
+.intro-ring{
+  position:absolute;
 
-      width: 100%;
-      min-width: 0;
-      height: 48px;
+  width:120px;
+  height:120px;
 
-      padding:
-        0
-        12px;
+  border:1px solid rgba(0,0,0,.14);
 
-      border: 0;
-      outline: none;
+  border-radius:50%;
 
-      background: transparent;
+  opacity:0;
 
-      color: #000000;
+  transform:scale(.4);
 
-      font-size: 14px;
-    }
+  animation:
+    ringIn 1.5s cubic-bezier(.16,1,.3,1) .25s forwards,
+    ringPulse 2.2s ease 1.4s infinite;
+}
 
-    #urlInput::placeholder {
-      color: #999999;
-    }
+.intro-ring.two{
+  width:210px;
+  height:210px;
 
-    .paste-button {
-      flex-shrink: 0;
+  border-color:rgba(0,0,0,.07);
 
-      height: 46px;
+  animation-delay:.45s,1.6s;
+}
 
-      padding:
-        0
-        16px;
+.intro-ring.three{
+  width:310px;
+  height:310px;
 
-      border: 0;
-      border-radius: 13px;
+  border-color:rgba(0,0,0,.045);
 
-      background: #dddddd;
+  animation-delay:.65s,1.8s;
+}
 
-      color: #000000;
+.intro-line{
+  position:absolute;
 
-      font-size: 12px;
-      font-weight: 900;
+  width:130%;
+  height:1px;
 
-      box-shadow:
-        0 4px 0 #999999;
+  background:#111;
 
-      cursor: pointer;
-    }
+  opacity:.08;
 
-    .paste-button:active {
-      transform: translateY(3px);
+  transform:rotate(-25deg) translateX(-100%);
 
-      box-shadow:
-        0 1px 0 #999999;
-    }
+  animation:
+    lineSweep 1.8s cubic-bezier(.16,1,.3,1) .15s forwards;
+}
 
-    /* =========================
-       PLATFORM
-    ========================= */
+.intro-dot{
+  position:absolute;
 
-    .platform-list {
-      display: flex;
-      flex-direction: column;
+  width:5px;
+  height:5px;
 
-      gap: 15px;
+  background:#111;
 
-      margin-top: 20px;
-    }
+  border-radius:50%;
 
-    .platform-button {
-      position: relative;
+  opacity:0;
+}
 
-      width: 100%;
-      min-height: 110px;
+.intro-dot.one{
+  top:24%;
+  left:18%;
 
-      padding:
-        22px;
+  animation:
+    dotIn .7s ease .5s forwards,
+    dotFloatOne 2.5s ease 1s infinite;
+}
 
-      border: 1px solid #dddddd;
-      border-radius: 22px;
+.intro-dot.two{
+  top:30%;
+  right:20%;
 
-      background: #f8f8f8;
+  animation:
+    dotIn .7s ease .7s forwards,
+    dotFloatTwo 2.7s ease 1s infinite;
+}
 
-      color: #000000;
+.intro-dot.three{
+  bottom:25%;
+  left:22%;
 
-      text-align: left;
+  animation:
+    dotIn .7s ease .9s forwards,
+    dotFloatThree 2.4s ease 1s infinite;
+}
 
-      box-shadow:
-        0 7px 0 #bdbdbd;
+.intro-dot.four{
+  bottom:28%;
+  right:17%;
 
-      cursor: pointer;
+  animation:
+    dotIn .7s ease 1.1s forwards,
+    dotFloatFour 2.8s ease 1s infinite;
+}
 
-      transition:
-        transform 0.1s ease,
-        box-shadow 0.1s ease;
-    }
+.intro-title{
+  position:relative;
+  z-index:5;
 
-    .platform-button:active {
-      transform: translateY(5px);
+  font-family:"Montserrat",sans-serif;
 
-      box-shadow:
-        0 2px 0 #bdbdbd;
-    }
+  font-size:clamp(48px,15vw,76px);
 
-    .platform-title {
-      font-size: 21px;
-      font-weight: 900;
+  font-weight:800;
 
-      letter-spacing: 0.5px;
-    }
+  letter-spacing:5px;
 
-    .platform-description {
-      margin-top: 8px;
+  color:#111;
 
-      color: #777777;
+  opacity:0;
 
-      font-size: 12px;
-    }
+  transform:translateY(120px) scale(.82);
 
-    .arrow {
-      position: absolute;
+  animation:
+    titleIn 1.25s cubic-bezier(.16,1,.3,1) .25s forwards,
+    titlePulse 1.8s ease 1.45s;
+}
 
-      top: 50%;
-      right: 22px;
 
-      transform:
-        translateY(-50%);
+/* ================================
+   INTRO ANIMATION
+================================ */
 
-      color: #000000;
+@keyframes titleIn{
 
-      font-size: 28px;
-      font-weight: 900;
-    }
+  0%{
+    opacity:0;
+    transform:translateY(120px) scale(.82);
+  }
 
-    /* =========================
-       LOADING
-    ========================= */
+  60%{
+    opacity:1;
+  }
 
-    #loading {
-      display: none;
+  82%{
+    transform:translateY(-7px) scale(1.025);
+  }
 
-      align-items: center;
-      justify-content: center;
+  100%{
+    opacity:1;
+    transform:translateY(0) scale(1);
+  }
+}
 
-      gap: 7px;
+@keyframes titlePulse{
 
-      margin-top: 24px;
+  0%{
+    text-shadow:0 0 0 rgba(0,0,0,0);
+  }
 
-      color: #000000;
+  50%{
+    text-shadow:0 0 28px rgba(0,0,0,.14);
+  }
 
-      font-size: 11px;
-      font-weight: 800;
+  100%{
+    text-shadow:0 0 0 rgba(0,0,0,0);
+  }
+}
 
-      letter-spacing: 2px;
-    }
+@keyframes ringIn{
 
-    #loading.show {
-      display: flex;
-    }
+  0%{
+    opacity:0;
+    transform:scale(.4);
+  }
 
-    .loading-dot {
-      width: 7px;
-      height: 7px;
+  60%{
+    opacity:1;
+  }
 
-      border-radius: 50%;
+  100%{
+    opacity:1;
+    transform:scale(1);
+  }
+}
 
-      background: #000000;
+@keyframes ringPulse{
 
-      animation:
-        loadingDot 0.8s infinite alternate;
-    }
+  0%,
+  100%{
+    transform:scale(1);
+    opacity:.6;
+  }
 
-    .loading-dot:nth-child(2) {
-      animation-delay: 0.2s;
-    }
+  50%{
+    transform:scale(1.08);
+    opacity:.25;
+  }
+}
 
-    .loading-dot:nth-child(3) {
-      animation-delay: 0.4s;
-    }
+@keyframes glowIn{
 
-    @keyframes loadingDot {
-      from {
-        opacity: 0.2;
-        transform: translateY(0);
-      }
+  from{
+    opacity:0;
+    transform:scale(.7);
+  }
 
-      to {
-        opacity: 1;
-        transform: translateY(-4px);
-      }
-    }
+  to{
+    opacity:1;
+    transform:scale(1);
+  }
+}
 
-    /* =========================
-       STATUS
-    ========================= */
+@keyframes glowPulse{
 
-    #status {
-      display: none;
+  0%,
+  100%{
+    transform:scale(1);
+  }
 
-      width: 100%;
+  50%{
+    transform:scale(1.12);
+  }
+}
 
-      margin-top: 20px;
-      padding: 15px;
+@keyframes lineSweep{
 
-      border:
-        1px solid #dddddd;
+  from{
+    transform:rotate(-25deg) translateX(-100%);
+  }
 
-      border-radius: 15px;
+  to{
+    transform:rotate(-25deg) translateX(100%);
+  }
+}
 
-      background: #f5f5f5;
+@keyframes dotIn{
 
-      color: #222222;
+  from{
+    opacity:0;
+    transform:scale(0);
+  }
 
-      font-size: 13px;
-      line-height: 1.5;
+  to{
+    opacity:.28;
+    transform:scale(1);
+  }
+}
 
-      word-break: break-word;
-    }
+@keyframes dotFloatOne{
 
-    #status.show {
-      display: block;
-    }
+  0%,
+  100%{
+    transform:translate(0,0);
+  }
 
-    #status.error {
-      background: #fff5f5;
-      border-color: #ffcccc;
-      color: #a00000;
-    }
+  50%{
+    transform:translate(18px,-12px);
+  }
+}
 
-    /* =========================
-       FOOTER
-    ========================= */
+@keyframes dotFloatTwo{
 
-    .footer {
-      margin-top: 35px;
+  0%,
+  100%{
+    transform:translate(0,0);
+  }
 
-      text-align: center;
+  50%{
+    transform:translate(-16px,14px);
+  }
+}
 
-      color: #999999;
+@keyframes dotFloatThree{
 
-      font-size: 10px;
-      letter-spacing: 2px;
-    }
+  0%,
+  100%{
+    transform:translate(0,0);
+  }
 
-    /* =========================
-       SMALL SCREEN
-    ========================= */
+  50%{
+    transform:translate(13px,15px);
+  }
+}
 
-    @media (max-width: 380px) {
-      .logo-text {
-        font-size: 28px;
-      }
+@keyframes dotFloatFour{
 
-      .splash-title {
-        font-size: 36px;
-      }
+  0%,
+  100%{
+    transform:translate(0,0);
+  }
 
-      .paste-button {
-        padding:
-          0
-          12px;
-      }
-    }
-  </style>
+  50%{
+    transform:translate(-14px,-13px);
+  }
+}
+
+@keyframes introOut{
+
+  0%{
+    opacity:1;
+    visibility:visible;
+  }
+
+  100%{
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+  }
+}
+
+
+/* ================================
+   BACKGROUND
+================================ */
+
+.background{
+  position:fixed;
+  inset:0;
+  z-index:0;
+
+  pointer-events:none;
+  overflow:hidden;
+
+  background:#fff;
+}
+
+.background-orb{
+  position:absolute;
+
+  border-radius:50%;
+
+  filter:blur(75px);
+
+  opacity:.16;
+}
+
+.background-orb.one{
+  width:220px;
+  height:220px;
+
+  top:-80px;
+  left:-80px;
+
+  background:#cfcfcf;
+
+  animation:bgOne 9s ease-in-out infinite;
+}
+
+.background-orb.two{
+  width:260px;
+  height:260px;
+
+  right:-110px;
+  top:28%;
+
+  background:#ddd;
+
+  animation:bgTwo 11s ease-in-out infinite;
+}
+
+.background-orb.three{
+  width:200px;
+  height:200px;
+
+  bottom:-70px;
+  left:-70px;
+
+  background:#d5d5d5;
+
+  animation:bgThree 10s ease-in-out infinite;
+}
+
+.background-orb.four{
+  width:180px;
+  height:180px;
+
+  right:-70px;
+  bottom:-60px;
+
+  background:#e4e4e4;
+
+  animation:bgFour 12s ease-in-out infinite;
+}
+
+@keyframes bgOne{
+
+  0%,
+  100%{
+    transform:translate(0,0);
+  }
+
+  50%{
+    transform:translate(30px,20px);
+  }
+}
+
+@keyframes bgTwo{
+
+  0%,
+  100%{
+    transform:translate(0,0);
+  }
+
+  50%{
+    transform:translate(-25px,30px);
+  }
+}
+
+@keyframes bgThree{
+
+  0%,
+  100%{
+    transform:translate(0,0);
+  }
+
+  50%{
+    transform:translate(20px,-25px);
+  }
+}
+
+@keyframes bgFour{
+
+  0%,
+  100%{
+    transform:translate(0,0);
+  }
+
+  50%{
+    transform:translate(-20px,-25px);
+  }
+}
+
+
+/* ================================
+   DECORATION
+================================ */
+
+.decor-grid{
+  position:fixed;
+  inset:0;
+
+  z-index:1;
+
+  pointer-events:none;
+
+  opacity:.22;
+
+  background-image:
+    linear-gradient(
+      rgba(0,0,0,.035) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(0,0,0,.035) 1px,
+      transparent 1px
+    );
+
+  background-size:35px 35px;
+
+  mask-image:
+    linear-gradient(
+      to bottom,
+      transparent,
+      black 15%,
+      black 85%,
+      transparent
+    );
+}
+
+.decor-circle{
+  position:fixed;
+
+  z-index:1;
+
+  width:90px;
+  height:90px;
+
+  border:1px solid rgba(0,0,0,.07);
+
+  border-radius:50%;
+
+  pointer-events:none;
+}
+
+.decor-circle.one{
+  top:18%;
+  left:-45px;
+}
+
+.decor-circle.two{
+  bottom:15%;
+  right:-45px;
+
+  width:120px;
+  height:120px;
+}
+
+.decor-line{
+  position:fixed;
+
+  z-index:1;
+
+  width:130px;
+  height:1px;
+
+  background:#111;
+
+  opacity:.08;
+
+  pointer-events:none;
+}
+
+.decor-line.one{
+  top:20%;
+  right:15%;
+
+  transform:rotate(-35deg);
+}
+
+.decor-line.two{
+  bottom:25%;
+  left:10%;
+
+  transform:rotate(35deg);
+}
+
+
+/* ================================
+   APP
+================================ */
+
+.app{
+  position:relative;
+
+  z-index:2;
+
+  width:100%;
+  max-width:600px;
+
+  margin:auto;
+
+  padding:48px 18px 30px;
+
+  opacity:0;
+
+  transform:translateY(25px);
+
+  animation:appIn .8s ease 3.35s forwards;
+}
+
+@keyframes appIn{
+
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
+}
+
+
+/* ================================
+   HEADER
+================================ */
+
+.header{
+  text-align:center;
+
+  margin-bottom:30px;
+}
+
+.logo-small{
+  display:inline-flex;
+
+  align-items:center;
+  justify-content:center;
+
+  width:38px;
+  height:38px;
+
+  margin-bottom:12px;
+
+  border:1.5px solid #111;
+
+  border-radius:12px;
+
+  background:#fff;
+
+  box-shadow:0 4px 0 #111;
+
+  font-family:"Montserrat",sans-serif;
+
+  font-size:12px;
+  font-weight:800;
+
+  letter-spacing:1px;
+}
+
+.main-title{
+  margin:0;
+
+  font-family:"Montserrat",sans-serif;
+
+  font-size:45px;
+
+  line-height:1;
+
+  font-weight:800;
+
+  letter-spacing:3px;
+
+  color:#111;
+}
+
+.subtitle{
+  margin:11px 0 0;
+
+  font-size:12px;
+
+  font-weight:500;
+
+  color:#777;
+}
+
+.header-description{
+  max-width:390px;
+
+  margin:10px auto 0;
+
+  font-size:10px;
+
+  line-height:1.6;
+
+  color:#999;
+}
+
+.backend-status{
+  display:flex;
+
+  align-items:center;
+  justify-content:center;
+
+  gap:7px;
+
+  margin-top:12px;
+
+  font-size:9px;
+
+  font-weight:600;
+
+  color:#999;
+}
+
+.backend-dot{
+  width:6px;
+  height:6px;
+
+  border-radius:50%;
+
+  background:#999;
+
+  animation:statusPulse 1.7s infinite;
+}
+
+@keyframes statusPulse{
+
+  0%,
+  100%{
+    transform:scale(1);
+    opacity:.6;
+  }
+
+  50%{
+    transform:scale(1.35);
+    opacity:1;
+  }
+}
+
+
+/* ================================
+   PLATFORM CARD
+================================ */
+
+.platform-card{
+  position:relative;
+
+  width:100%;
+
+  padding:18px;
+
+  margin-bottom:18px;
+
+  background:rgba(255,255,255,.93);
+
+  border:1.5px solid #111;
+
+  border-radius:20px;
+
+  box-shadow:0 7px 0 #111;
+
+  overflow:hidden;
+
+  transition:
+    transform .2s ease,
+    box-shadow .2s ease;
+}
+
+.platform-card::before{
+  content:"";
+
+  position:absolute;
+
+  width:100px;
+  height:100px;
+
+  right:-45px;
+  top:-45px;
+
+  border-radius:50%;
+
+  border:1px solid rgba(0,0,0,.07);
+}
+
+.platform-card::after{
+  content:"";
+
+  position:absolute;
+
+  width:55px;
+  height:55px;
+
+  left:-28px;
+  bottom:-28px;
+
+  border-radius:50%;
+
+  background:rgba(0,0,0,.025);
+}
+
+.platform-card:active{
+  transform:translateY(5px);
+
+  box-shadow:0 2px 0 #111;
+}
+
+
+/* ================================
+   PLATFORM HEADER
+================================ */
+
+.platform-header{
+  display:flex;
+
+  align-items:center;
+
+  gap:12px;
+
+  margin-bottom:14px;
+}
+
+.platform-icon{
+  flex-shrink:0;
+
+  display:flex;
+
+  align-items:center;
+  justify-content:center;
+
+  width:42px;
+  height:42px;
+
+  border:1.5px solid #111;
+
+  border-radius:12px;
+
+  background:#111;
+
+  color:#fff;
+
+  font-family:"Montserrat",sans-serif;
+
+  font-size:12px;
+
+  font-weight:800;
+
+  box-shadow:0 3px 0 #777;
+}
+
+.platform-name{
+  margin:0;
+
+  font-size:18px;
+
+  font-weight:800;
+
+  color:#111;
+}
+
+.platform-description{
+  margin:4px 0 0;
+
+  font-size:10px;
+
+  line-height:1.5;
+
+  font-weight:500;
+
+  color:#888;
+}
+
+
+/* ================================
+   INPUT
+================================ */
+
+.input-wrapper{
+  position:relative;
+
+  width:100%;
+}
+
+.url-input{
+  width:100%;
+  height:48px;
+
+  padding:0 80px 0 14px;
+
+  border:1.5px solid #d7d7d7;
+
+  border-radius:12px;
+
+  outline:none;
+
+  background:#fafafa;
+
+  font-family:"Plus Jakarta Sans",sans-serif;
+
+  font-size:11px;
+
+  font-weight:500;
+
+  color:#111;
+
+  transition:
+    border-color .2s ease,
+    background .2s ease,
+    box-shadow .2s ease;
+}
+
+.url-input:focus{
+  border-color:#111;
+
+  background:#fff;
+
+  box-shadow:0 0 0 3px rgba(0,0,0,.04);
+}
+
+.url-input::placeholder{
+  color:#aaa;
+}
+
+.paste-button{
+  position:absolute;
+
+  top:6px;
+  right:6px;
+
+  height:36px;
+
+  padding:0 12px;
+
+  border:1px solid #111;
+
+  border-radius:9px;
+
+  background:#111;
+
+  color:#fff;
+
+  font-family:"Plus Jakarta Sans",sans-serif;
+
+  font-size:9px;
+
+  font-weight:700;
+
+  cursor:pointer;
+
+  transition:.15s ease;
+}
+
+.paste-button:active{
+  transform:scale(.94);
+}
+
+
+/* ================================
+   DETECT BUTTON
+================================ */
+
+.detect-button{
+  position:relative;
+
+  width:100%;
+  height:47px;
+
+  margin-top:12px;
+
+  border:1.5px solid #111;
+
+  border-radius:12px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #fff 0%,
+      #e9e9e9 42%,
+      #a9a9a9 100%
+    );
+
+  color:#111;
+
+  box-shadow:0 5px 0 #111;
+
+  font-family:"Plus Jakarta Sans",sans-serif;
+
+  font-size:11px;
+
+  font-weight:800;
+
+  cursor:pointer;
+
+  overflow:hidden;
+
+  transition:
+    transform .15s ease,
+    box-shadow .15s ease;
+}
+
+.detect-button::before{
+  content:"";
+
+  position:absolute;
+
+  top:0;
+  left:-100%;
+
+  width:60%;
+  height:100%;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(255,255,255,.8),
+      transparent
+    );
+
+  transform:skewX(-20deg);
+
+  transition:left .6s ease;
+}
+
+.detect-button:hover::before{
+  left:130%;
+}
+
+.detect-button:active{
+  transform:translateY(5px);
+
+  box-shadow:0 0 0 #111;
+}
+
+.button-content{
+  position:relative;
+
+  z-index:2;
+
+  display:flex;
+
+  align-items:center;
+  justify-content:center;
+
+  gap:8px;
+}
+
+.arrow{
+  font-size:14px;
+}
+
+
+/* ================================
+   RESULT
+================================ */
+
+.result{
+  max-height:0;
+
+  opacity:0;
+
+  overflow:hidden;
+
+  transition:
+    max-height .65s cubic-bezier(.2,.8,.2,1),
+    opacity .35s ease,
+    margin-top .4s ease;
+}
+
+.result.show{
+  max-height:900px;
+
+  opacity:1;
+
+  margin-top:16px;
+}
+
+.result-inner{
+  padding-top:16px;
+
+  border-top:1px solid #eee;
+}
+
+.result-label{
+  display:flex;
+
+  align-items:center;
+  justify-content:space-between;
+
+  margin-bottom:9px;
+}
+
+.result-title{
+  font-size:10px;
+
+  font-weight:800;
+
+  text-transform:uppercase;
+
+  letter-spacing:.6px;
+}
+
+.result-badge{
+  padding:4px 7px;
+
+  border:1px solid #ddd;
+
+  border-radius:20px;
+
+  background:#fafafa;
+
+  font-size:8px;
+
+  font-weight:700;
+
+  color:#777;
+}
+
+
+/* ================================
+   THUMBNAIL
+================================ */
+
+.thumbnail-wrapper{
+  width:100%;
+
+  aspect-ratio:16/9;
+
+  overflow:hidden;
+
+  border-radius:13px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #eee,
+      #d4d4d4
+    );
+
+  border:1px solid #e5e5e5;
+
+  position:relative;
+}
+
+.thumbnail-wrapper::after{
+  content:"PREVIEW";
+
+  position:absolute;
+
+  top:10px;
+  left:10px;
+
+  padding:5px 7px;
+
+  border-radius:6px;
+
+  background:rgba(0,0,0,.65);
+
+  color:#fff;
+
+  font-size:7px;
+
+  font-weight:700;
+
+  letter-spacing:.7px;
+}
+
+.thumbnail{
+  width:100%;
+  height:100%;
+
+  object-fit:cover;
+
+  display:block;
+}
+
+
+/* ================================
+   CAPTION
+================================ */
+
+.caption-box{
+  margin-top:12px;
+
+  padding:13px;
+
+  background:#f7f7f7;
+
+  border:1px solid #e5e5e5;
+
+  border-radius:11px;
+}
+
+.caption{
+  margin:0;
+
+  font-size:11px;
+
+  line-height:1.65;
+
+  font-weight:500;
+
+  color:#222;
+
+  user-select:text;
+  -webkit-user-select:text;
+
+  word-break:break-word;
+}
+
+.copy-caption{
+  margin-top:9px;
+
+  height:32px;
+
+  padding:0 11px;
+
+  border:1px solid #111;
+
+  border-radius:8px;
+
+  background:#fff;
+
+  color:#111;
+
+  font-size:9px;
+
+  font-weight:700;
+
+  cursor:pointer;
+}
+
+
+/* ================================
+   INFO
+================================ */
+
+.info-grid{
+  display:grid;
+
+  grid-template-columns:repeat(2,1fr);
+
+  gap:8px;
+
+  margin-top:12px;
+}
+
+.info-item{
+  padding:10px;
+
+  background:#fafafa;
+
+  border:1px solid #eee;
+
+  border-radius:9px;
+}
+
+.info-label{
+  display:block;
+
+  font-size:8px;
+
+  font-weight:700;
+
+  color:#999;
+
+  text-transform:uppercase;
+
+  letter-spacing:.5px;
+}
+
+.info-value{
+  display:block;
+
+  margin-top:4px;
+
+  font-size:10px;
+
+  font-weight:600;
+
+  color:#222;
+
+  white-space:nowrap;
+
+  overflow:hidden;
+
+  text-overflow:ellipsis;
+}
+
+
+/* ================================
+   DOWNLOAD BUTTON
+================================ */
+
+.download-button{
+  position:relative;
+
+  width:100%;
+  height:45px;
+
+  margin-top:12px;
+
+  border:1.5px solid #111;
+
+  border-radius:11px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #eee,
+      #777,
+      #222
+    );
+
+  color:#fff;
+
+  box-shadow:0 4px 0 #000;
+
+  font-size:10px;
+
+  font-weight:800;
+
+  cursor:pointer;
+
+  transition:.15s ease;
+}
+
+.download-button:active{
+  transform:translateY(4px);
+
+  box-shadow:0 0 0 #000;
+}
+
+
+/* ================================
+   STATUS
+================================ */
+
+.status{
+  min-height:18px;
+
+  margin-top:10px;
+
+  text-align:center;
+
+  font-size:9px;
+
+  font-weight:600;
+
+  color:#888;
+}
+
+.status.error{
+  color:#d00000;
+}
+
+.loading{
+  display:inline-flex;
+
+  align-items:center;
+
+  gap:5px;
+}
+
+.loading-dot{
+  width:5px;
+  height:5px;
+
+  border-radius:50%;
+
+  background:#111;
+
+  animation:
+    loadingDot 1s infinite ease-in-out;
+}
+
+.loading-dot:nth-child(2){
+  animation-delay:.15s;
+}
+
+.loading-dot:nth-child(3){
+  animation-delay:.3s;
+}
+
+@keyframes loadingDot{
+
+  0%,
+  70%,
+  100%{
+    transform:scale(.55);
+
+    opacity:.3;
+  }
+
+  35%{
+    transform:scale(1);
+
+    opacity:1;
+  }
+}
+
+
+/* ================================
+   FOOTER
+================================ */
+
+.footer{
+  margin-top:30px;
+
+  text-align:center;
+
+  font-family:"Montserrat",sans-serif;
+
+  font-size:8px;
+
+  font-weight:600;
+
+  letter-spacing:1.5px;
+
+  color:#aaa;
+}
+
+.footer span{
+  color:#555;
+}
+
+
+/* ================================
+   MOBILE
+================================ */
+
+@media(max-width:420px){
+
+  .app{
+    padding:42px 15px 25px;
+  }
+
+  .main-title{
+    font-size:40px;
+  }
+
+  .platform-card{
+    padding:16px;
+  }
+
+  .intro-title{
+    font-size:48px;
+  }
+}
+
+
+/* ================================
+   REDUCE MOTION
+================================ */
+
+@media(prefers-reduced-motion:reduce){
+
+  *,
+  *::before,
+  *::after{
+
+    animation-duration:.01ms!important;
+
+    animation-iteration-count:1!important;
+
+    transition-duration:.01ms!important;
+  }
+}
+
+</style>
 </head>
 
 <body>
 
-  <!-- =========================
-       SPLASH
-  ========================= -->
 
-  <div id="splash">
+<!-- ================================
+     INTRO
+================================ -->
 
-    <div class="splash-title">
-      REXCVC
+<div class="intro" id="intro">
+
+  <div class="intro-glow"></div>
+
+  <div class="intro-ring"></div>
+
+  <div class="intro-ring two"></div>
+
+  <div class="intro-ring three"></div>
+
+  <div class="intro-line"></div>
+
+  <div class="intro-dot one"></div>
+
+  <div class="intro-dot two"></div>
+
+  <div class="intro-dot three"></div>
+
+  <div class="intro-dot four"></div>
+
+  <div class="intro-title">
+    REXCVC
+  </div>
+
+</div>
+
+
+<!-- ================================
+     BACKGROUND
+================================ -->
+
+<div class="background">
+
+  <div class="background-orb one"></div>
+
+  <div class="background-orb two"></div>
+
+  <div class="background-orb three"></div>
+
+  <div class="background-orb four"></div>
+
+</div>
+
+
+<div class="decor-grid"></div>
+
+<div class="decor-circle one"></div>
+
+<div class="decor-circle two"></div>
+
+<div class="decor-line one"></div>
+
+<div class="decor-line two"></div>
+
+
+<!-- ================================
+     APP
+================================ -->
+
+<main class="app">
+
+
+<!-- HEADER -->
+
+<header class="header">
+
+  <div class="logo-small">
+    RX
+  </div>
+
+  <h1 class="main-title">
+    REXCVC
+  </h1>
+
+  <p class="subtitle">
+    Social Media Downloader
+  </p>
+
+  <p class="header-description">
+    Download your favorite videos from TikTok,
+    Instagram, and YouTube in one place.
+  </p>
+
+  <div class="backend-status">
+
+    <span class="backend-dot"
+          id="backendDot"></span>
+
+    <span id="backendText">
+      Checking system...
+    </span>
+
+  </div>
+
+</header>
+
+
+
+<!-- ================================
+     TIKTOK
+================================ -->
+
+<section class="platform-card">
+
+  <div class="platform-header">
+
+    <div class="platform-icon">
+      TK
     </div>
 
-    <div class="splash-subtitle">
-      VIDEO DOWNLOADER
-    </div>
+    <div>
 
-    <div class="splash-line"></div>
+      <h2 class="platform-name">
+        TikTok
+      </h2>
+
+      <p class="platform-description">
+        Download TikTok videos from a public link.
+      </p>
+
+    </div>
 
   </div>
 
 
-  <!-- =========================
-       MAIN APP
-  ========================= -->
-
-  <main class="app">
-
-    <div class="container">
-
-      <!-- HEADER -->
-
-      <header class="header">
-
-        <div class="logo-text">
-          REXCVC
-        </div>
-
-        <div class="tagline">
-          FAST · SIMPLE · CLEAN
-        </div>
-
-      </header>
-
-
-      <!-- URL INPUT -->
-
-      <div class="input-wrapper">
-
-        <input
-          id="urlInput"
-          type="url"
-          inputmode="url"
-          autocomplete="off"
-          autocapitalize="none"
-          spellcheck="false"
-          placeholder="Tempel link video di sini..."
-        >
-
-        <button
-          class="paste-button"
-          type="button"
-          onclick="pasteLink()"
-        >
-          PASTE
-        </button>
-
-      </div>
-
-
-      <!-- PLATFORM -->
-
-      <div class="platform-list">
-
-        <button
-          class="platform-button"
-          type="button"
-          onclick="startDownload('tiktok')"
-        >
-
-          <div class="platform-title">
-            TikTok
-          </div>
-
-          <div class="platform-description">
-            Download video TikTok
-          </div>
-
-          <div class="arrow">
-            ›
-          </div>
-
-        </button>
-
-
-        <button
-          class="platform-button"
-          type="button"
-          onclick="startDownload('instagram')"
-        >
-
-          <div class="platform-title">
-            Instagram
-          </div>
-
-          <div class="platform-description">
-            Download video Instagram
-          </div>
-
-          <div class="arrow">
-            ›
-          </div>
-
-        </button>
-
-
-        <button
-          class="platform-button"
-          type="button"
-          onclick="startDownload('youtube')"
-        >
-
-          <div class="platform-title">
-            YouTube
-          </div>
-
-          <div class="platform-description">
-            Download video YouTube
-          </div>
-
-          <div class="arrow">
-            ›
-          </div>
-
-        </button>
-
-      </div>
-
-
-      <!-- LOADING -->
-
-      <div id="loading">
-
-        <span class="loading-dot"></span>
-        <span class="loading-dot"></span>
-        <span class="loading-dot"></span>
-
-        <span>
-          MEMPROSES
-        </span>
-
-      </div>
-
-
-      <!-- STATUS -->
-
-      <div id="status"></div>
-
-
-      <!-- FOOTER -->
-
-      <div class="footer">
-        REXCVC DOWNLOADER
-      </div>
-
-    </div>
-
-  </main>
-
-
-  <script>
-    /*
-      ==============================
-      REXCVC CONFIGURATION
-      ==============================
-    */
-
-    const API_BASE =
-      "https://rexcvc-f1l1rbr.cranl.net";
-
-
-    /*
-      ==============================
-      ELEMENTS
-      ==============================
-    */
-
-    const splash =
-      document.getElementById("splash");
-
-    const input =
-      document.getElementById("urlInput");
-
-    const loading =
-      document.getElementById("loading");
-
-    const statusBox =
-      document.getElementById("status");
-
-
-    /*
-      ==============================
-      SPLASH
-      ==============================
-    */
-
-    window.addEventListener(
-      "load",
-      function () {
-
-        setTimeout(
-          function () {
-
-            splash.classList.add("hide");
-
-          },
-          1800
-        );
-
-      }
-    );
-
-
-    /*
-      ==============================
-      STATUS
-      ==============================
-    */
-
-    function showStatus(
-      message,
-      isError
-    ) {
-
-      statusBox.textContent =
-        message;
-
-      statusBox.classList.add(
-        "show"
-      );
-
-      if (isError) {
-
-        statusBox.classList.add(
-          "error"
-        );
-
-      } else {
-
-        statusBox.classList.remove(
-          "error"
-        );
-
-      }
-
-    }
-
-
-    function clearStatus() {
-
-      statusBox.textContent = "";
-
-      statusBox.classList.remove(
-        "show"
-      );
-
-      statusBox.classList.remove(
-        "error"
-      );
-
-    }
-
-
-    /*
-      ==============================
-      LOADING
-      ==============================
-    */
-
-    function setLoading(
-      value
-    ) {
-
-      if (value) {
-
-        loading.classList.add(
-          "show"
-        );
-
-      } else {
-
-        loading.classList.remove(
-          "show"
-        );
-
-      }
-
-    }
-
-
-    /*
-      ==============================
-      PASTE
-      ==============================
-    */
-
-    async function pasteLink() {
-
-      clearStatus();
-
-      /*
-        Coba Clipboard API
-      */
-
-      try {
-
-        if (
-          navigator.clipboard &&
-          navigator.clipboard.readText
-        ) {
-
-          const text =
-            await navigator.clipboard.readText();
-
-          if (text) {
-
-            input.value =
-              text.trim();
-
-            showStatus(
-              "Link berhasil ditempel.",
-              false
-            );
-
-            return;
-
-          }
-
-        }
-
-      } catch (error) {
-
-        console.log(
-          "Clipboard API:",
-          error
-        );
-
-      }
-
-
-      /*
-        Jika Android WebView
-        tidak mengizinkan clipboard,
-        arahkan pengguna ke paste manual.
-      */
-
-      input.focus();
-
-      showStatus(
-        "Tekan lama kolom link lalu pilih Tempel.",
-        false
-      );
-
-    }
-
-
-    /*
-      ==============================
-      PLATFORM DETECTION
-      ==============================
-    */
-
-    function detectPlatform(
-      value
-    ) {
-
-      try {
-
-        const url =
-          new URL(value);
-
-        const host =
-          url.hostname
-            .toLowerCase()
-            .replace(/^www\./, "");
-
-
-        /*
-          YouTube
-        */
-
-        if (
-          host === "youtube.com" ||
-          host === "youtu.be" ||
-          host === "m.youtube.com"
-        ) {
-
-          return "youtube";
-
-        }
-
-
-        /*
-          TikTok
-        */
-
-        if (
-          host === "tiktok.com" ||
-          host === "vm.tiktok.com" ||
-          host === "vt.tiktok.com"
-        ) {
-
-          return "tiktok";
-
-        }
-
-
-        /*
-          Instagram
-        */
-
-        if (
-          host === "instagram.com"
-        ) {
-
-          return "instagram";
-
-        }
-
-
-        return null;
-
-      } catch {
-
-        return null;
-
-      }
-
-    }
-
-
-    /*
-      ==============================
-      DOWNLOAD
-      ==============================
-    */
-
-    async function startDownload(
-      selectedPlatform
-    ) {
-
-      clearStatus();
-
-      const url =
-        input.value.trim();
-
-
-      /*
-        Cek URL kosong
-      */
-
-      if (!url) {
-
-        showStatus(
-          "Masukkan link video terlebih dahulu.",
-          true
-        );
-
-        input.focus();
-
-        return;
-
-      }
-
-
-      /*
-        Cek URL valid
-      */
-
-      const detectedPlatform =
-        detectPlatform(url);
-
-
-      if (!detectedPlatform) {
-
-        showStatus(
-          "Link tidak dikenali. Gunakan link TikTok, Instagram, atau YouTube.",
-          true
-        );
-
-        return;
-
-      }
-
-
-      /*
-        Cek platform
-      */
-
-      if (
-        detectedPlatform !==
-        selectedPlatform
-      ) {
-
-        showStatus(
-          "Link ini terdeteksi sebagai " +
-          detectedPlatform.toUpperCase() +
-          ".",
-          true
-        );
-
-        return;
-
-      }
-
-
-      /*
-        Mulai loading
-      */
-
-      setLoading(true);
-
-
-      try {
-
-        /*
-          1. CHECK SERVER
-        */
-
-        const infoResponse =
-          await fetch(
-            API_BASE +
-            "/api/info",
-            {
-              method: "POST",
-
-              headers: {
-                "Content-Type":
-                  "application/json"
-              },
-
-              body:
-                JSON.stringify({
-                  url: url
-                })
-            }
-          );
-
-
-        /*
-          Server error
-        */
-
-        if (
-          !infoResponse.ok
-        ) {
-
-          let message =
-            "Server gagal memproses link.";
-
-          try {
-
-            const data =
-              await infoResponse.json();
-
-            if (
-              data &&
-              data.error
-            ) {
-
-              message =
-                data.error;
-
-            }
-
-          } catch {
-
-            // ignore
-
-          }
-
-          throw new Error(
-            message
-          );
-
-        }
-
-
-        /*
-          Ambil info
-        */
-
-        const info =
-          await infoResponse.json();
-
-
-        showStatus(
-          "Video ditemukan. Memulai download...",
-          false
-        );
-
-
-        /*
-          2. DOWNLOAD
-        */
-
-        const downloadUrl =
-          API_BASE +
-          "/api/download?url=" +
-          encodeURIComponent(url);
-
-
-        const downloadResponse =
-          await fetch(
-            downloadUrl,
-            {
-              method: "GET"
-            }
-          );
-
-
-        /*
-          Download gagal
-        */
-
-        if (
-          !downloadResponse.ok
-        ) {
-
-          let message =
-            "Download gagal.";
-
-          try {
-
-            const data =
-              await downloadResponse.json();
-
-            if (
-              data &&
-              data.error
-            ) {
-
-              message =
-                data.error;
-
-            }
-
-          } catch {
-
-            // ignore
-
-          }
-
-          throw new Error(
-            message
-          );
-
-        }
-
-
-        /*
-          Ambil file
-        */
-
-        const blob =
-          await downloadResponse.blob();
-
-
-        if (
-          !blob ||
-          blob.size <= 0
-        ) {
-
-          throw new Error(
-            "File video kosong."
-          );
-
-        }
-
-
-        /*
-          Buat link download
-        */
-
-        const blobUrl =
-          URL.createObjectURL(
-            blob
-          );
-
-
-        const downloadLink =
-          document.createElement(
-            "a"
-          );
-
-
-        downloadLink.href =
-          blobUrl;
-
-        downloadLink.download =
-          "Rexcvc-Video.mp4";
-
-        downloadLink.style.display =
-          "none";
-
-
-        document.body.appendChild(
-          downloadLink
-        );
-
-
-        downloadLink.click();
-
-
-        /*
-          Bersihkan
-        */
-
-        setTimeout(
-          function () {
-
-            downloadLink.remove();
-
-            URL.revokeObjectURL(
-              blobUrl
-            );
-
-          },
-          3000
-        );
-
-
-        showStatus(
-          "Download selesai.",
-          false
-        );
-
-      } catch (error) {
-
-        console.error(
-          "REXCVC ERROR:",
-          error
-        );
-
-
-        let message =
-          error &&
-          error.message
-            ? error.message
-            : "Terjadi kesalahan.";
-
-
-        if (
-          message
-            .toLowerCase()
-            .includes(
-              "failed to fetch"
-            )
-        ) {
-
-          message =
-            "Tidak dapat terhubung ke server Rexcvc.";
-
-        }
-
-
-        showStatus(
-          message,
-          true
-        );
-
-      } finally {
-
-        setLoading(false);
-
-      }
-
-    }
-  </script>
-
-</body>
-</html>
+  <div class="input-wrapper">
+
+    <input
+      class="url-input"
+      id="tiktokInput"
+      type="url"
+      placeholder="Paste TikTok URL here..."
+      autocomplete="off"
+      spellcheck="false"
+    >
+
+    <button
+  
